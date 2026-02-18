@@ -1,0 +1,33 @@
+System Name: Kopa Arena
+
+Tech Stack: Laravel + PHP Blade
+
+Objective: Booking System for facilitie especially for football field.
+
+To solve: to avoid Double booking and also to centralize sales database.
+
+Features:
+|- HQ
+|   |- Dashboard (sales statistic, table list active bookings)
+|   |- Satff HQ/Branch Listing - Register HQ staff and Branch staff (role based)
+|   |- Facility Listing (focus on Football Fields) - Add new facility related to branch - means each branch can have more than one facility (football fields)
+|   |- Booking slot can be set (Active, maintenance, closed) based on datetime from when to when
+|   |- Booking price (normal price assign to all) - hq can set specific time slot as peak hours and set peak hours price
+|   |- Booking listing (Approve, Reject, Canceled) - show tag full payment or deposit
+|   |- Slot time rules (for football field): Every slot (game) is 90 minutes +- 5 minutes, admin can set earliest time can start booking and last timeslot to book. Each slot diferent is 30 minutes such as 9.00 AM, 9.30 AM, 10.00 AM and so on.
+|   |- Sales closing -> report daily, weekly, monthly, yearly
+|
+|- Branch (coming soon will be brief later)
+
+
+amend for HQ
+- hq can select specific day and set specific time slot as peak hour with price and assign to multiple branch (can update/delete)
+
+
+|- Branch Module
+|   |- Dashboard (sales statistic, table list active bookings) - its own
+|   |- Satff Branch Listing - Register HQ staff and Branch staff (role based) - its own
+|   |- Facility Listing (focus on Football Fields) - Add new facility related to branch - means each branch can have more than one facility (football fields) - its own
+|   |- Booking slot can be set (Active, maintenance, closed) based on datetime from when to when - its own
+|   |- Booking listing (Approve, Reject, Canceled) - show tag full payment or deposit- its own
+|   |- Sales closing -> report daily, weekly, monthly, yearly - its own
