@@ -29,7 +29,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        $user = Auth::user();
+        $user = \App\Models\User::find(Auth::id());
         $user->update([
             'last_login_at' => now(),
             'last_login_ip' => $request->ip(),
@@ -44,7 +44,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        ActivityLog::log('logout', 'User', auth()->id(), 'IP: ' . $request->ip());
+        ActivityLog::log('logout', 'User', Auth::id(), 'IP: ' . $request->ip());
 
         Auth::guard('web')->logout();
 
