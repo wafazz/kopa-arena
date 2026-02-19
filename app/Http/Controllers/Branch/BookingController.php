@@ -140,8 +140,8 @@ class BookingController extends Controller
             }
 
             try {
-                DB::transaction(function () use ($request, $parent, $amount) {
-                    Booking::create([
+                $booking = DB::transaction(function () use ($request, $parent, $amount) {
+                    return Booking::create([
                         'facility_id' => $parent->facility_id,
                         'user_id' => Auth::id(),
                         'booking_date' => $parent->booking_date,
@@ -163,7 +163,7 @@ class BookingController extends Controller
                 return back()->withInput()->with('error', 'Failed to join match.');
             }
 
-            ActivityLog::log('store', 'Booking', null, 'Joined match as opponent for ' . $request->customer_name);
+            ActivityLog::log('store', 'Booking', $booking->id, 'Joined match as opponent for ' . $request->customer_name);
             return redirect()->route('branch.bookings.index')->with('success', 'Successfully joined match as opponent.');
         }
 
@@ -172,8 +172,8 @@ class BookingController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($request, $endTime, $amount) {
-                Booking::create([
+            $booking = DB::transaction(function () use ($request, $endTime, $amount) {
+                return Booking::create([
                     'facility_id' => $request->facility_id,
                     'user_id' => Auth::id(),
                     'booking_date' => $request->booking_date,
@@ -197,7 +197,7 @@ class BookingController extends Controller
             throw $e;
         }
 
-        ActivityLog::log('store', 'Booking', null, 'Booking for ' . $request->customer_name);
+        ActivityLog::log('store', 'Booking', $booking->id, 'Booking for ' . $request->customer_name);
         return redirect()->route('branch.bookings.index')->with('success', 'Booking created successfully.');
     }
 

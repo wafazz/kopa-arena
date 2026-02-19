@@ -34,7 +34,7 @@ class AuthenticatedSessionController extends Controller
             'last_login_at' => now(),
             'last_login_ip' => $request->ip(),
         ]);
-        ActivityLog::log('login', null, null, 'IP: ' . $request->ip());
+        ActivityLog::log('login', 'User', $user->id, 'IP: ' . $request->ip());
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
@@ -44,7 +44,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        ActivityLog::log('logout');
+        ActivityLog::log('logout', 'User', auth()->id(), 'IP: ' . $request->ip());
 
         Auth::guard('web')->logout();
 

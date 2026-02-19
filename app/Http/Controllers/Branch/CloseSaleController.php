@@ -259,8 +259,8 @@ class CloseSaleController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($request, $facility, $endTime, $amount) {
-                Booking::create([
+            $walkin = DB::transaction(function () use ($request, $facility, $endTime, $amount) {
+                return Booking::create([
                     'facility_id' => $facility->id,
                     'user_id' => Auth::id(),
                     'booking_date' => $request->booking_date,
@@ -281,7 +281,7 @@ class CloseSaleController extends Controller
             return back()->withInput()->with('error', 'Failed to create walk-in booking.');
         }
 
-        ActivityLog::log('walkinStore', 'Booking', null, 'Walk-in for ' . $request->customer_name);
+        ActivityLog::log('walkinStore', 'Booking', $walkin->id, 'Walk-in for ' . $request->customer_name);
         return redirect()->route('branch.close-sales.index', [
             'date' => $request->booking_date,
         ])->with('success', 'Walk-in booking created successfully.');
