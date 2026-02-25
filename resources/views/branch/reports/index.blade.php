@@ -20,8 +20,10 @@
                         <label class="form-label">Report Category</label>
                         <select name="report_category" class="form-select" id="reportCategory">
                             <option value="booking" {{ (isset($reportCategory) && $reportCategory === 'booking') ? 'selected' : '' }}>Booking</option>
+                            {{-- ECOMMERCE ADDON
                             <option value="ecommerce" {{ (isset($reportCategory) && $reportCategory === 'ecommerce') ? 'selected' : '' }}>E-Commerce</option>
                             <option value="combined" {{ (isset($reportCategory) && $reportCategory === 'combined') ? 'selected' : '' }}>Combined</option>
+                            ECOMMERCE ADDON --}}
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -113,6 +115,7 @@
     </div>
     @endif
 
+    {{-- ECOMMERCE ADDON
     {{-- ORDER SECTION --}}
     @if($reportCategory === 'ecommerce' || $reportCategory === 'combined')
     <div class="row">
@@ -184,6 +187,7 @@
         </div>
     </div>
     @endif
+    ECOMMERCE ADDON --}}
 @endif
 @endsection
 

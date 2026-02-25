@@ -217,6 +217,7 @@
     </div>
 </div>
 
+{{-- ECOMMERCE ADDON
 <!-- E-COMMERCE ORDER SUMMARY CARDS -->
 <div class="row">
     <div class="col-md-12">
@@ -376,9 +377,10 @@
         </div>
     </div>
 </div>
+ECOMMERCE ADDON --}}
 
 <!-- CLOSE DAY BUTTON -->
-@if(!$closeSale && ($bookings->count() > 0 || $orders->count() > 0))
+@if(!$closeSale && $bookings->count() > 0)
 <div class="row m-b-30">
     <div class="col-md-12 text-center">
         <form action="{{ route('branch.close-sales.close') }}" method="POST" id="closeDayForm">
@@ -397,7 +399,7 @@
 function confirmClose() {
     Swal.fire({
         title: 'Close Day?',
-        text: 'This will lock all bookings and orders for this date. No changes can be made until reopened.',
+        text: 'This will lock all bookings for this date. No changes can be made until reopened.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#28a745',
@@ -410,7 +412,7 @@ function confirmClose() {
 function confirmReopen() {
     Swal.fire({
         title: 'Reopen Day?',
-        text: 'This will unlock bookings and orders for this date, allowing modifications.',
+        text: 'This will unlock bookings for this date, allowing modifications.',
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#ffc107',

@@ -106,6 +106,7 @@
                                 <i class="fas fa-cash-register"></i>Close Sales</a>
                         </li>
                         @endif
+                        {{-- ECOMMERCE ADDON
                         @if(auth()->user()->hasPermission('manage_products') || auth()->user()->hasPermission('manage_orders'))
                         <li class="has-sub">
                             <a class="js-arrow" href="#">
@@ -123,6 +124,7 @@
                             </ul>
                         </li>
                         @endif
+                        ECOMMERCE ADDON --}}
                         @if(auth()->user()->hasPermission('manage_staff'))
                         <li>
                             <a href="{{ route('staff.index') }}">
@@ -177,6 +179,7 @@
                                 <i class="fas fa-cash-register"></i>Close Sales</a>
                         </li>
                         @endif
+                        {{-- ECOMMERCE ADDON
                         @if(auth()->user()->hasPermission('manage_products') || auth()->user()->hasPermission('manage_orders'))
                         <li class="has-sub">
                             <a class="js-arrow" href="#">
@@ -193,6 +196,7 @@
                             </ul>
                         </li>
                         @endif
+                        ECOMMERCE ADDON --}}
                         @if(auth()->user()->hasPermission('manage_staff'))
                         <li>
                             <a href="{{ route('branch.staff.index') }}">
@@ -269,6 +273,7 @@
                                 <i class="fas fa-cash-register"></i>Close Sales</a>
                         </li>
                         @endif
+                        {{-- ECOMMERCE ADDON
                         @if(auth()->user()->hasPermission('manage_products') || auth()->user()->hasPermission('manage_orders'))
                         @php $ecomActive = request()->routeIs('products.*') || request()->routeIs('product-categories.*') || request()->routeIs('orders.*'); @endphp
                         <li class="has-sub {{ $ecomActive ? 'active open' : '' }}">
@@ -293,6 +298,7 @@
                             </ul>
                         </li>
                         @endif
+                        ECOMMERCE ADDON --}}
                         @if(auth()->user()->hasPermission('manage_staff'))
                         <li class="{{ request()->routeIs('staff.*') ? 'active' : '' }}">
                             <a href="{{ route('staff.index') }}">
@@ -347,6 +353,7 @@
                                 <i class="fas fa-cash-register"></i>Close Sales</a>
                         </li>
                         @endif
+                        {{-- ECOMMERCE ADDON
                         @if(auth()->user()->hasPermission('manage_products') || auth()->user()->hasPermission('manage_orders'))
                         @php $branchEcomActive = request()->routeIs('branch.products.*') || request()->routeIs('branch.orders.*'); @endphp
                         <li class="has-sub {{ $branchEcomActive ? 'active open' : '' }}">
@@ -368,6 +375,7 @@
                             </ul>
                         </li>
                         @endif
+                        ECOMMERCE ADDON --}}
                         @if(auth()->user()->hasPermission('manage_staff'))
                         <li class="{{ request()->routeIs('branch.staff.*') ? 'active' : '' }}">
                             <a href="{{ route('branch.staff.index') }}">

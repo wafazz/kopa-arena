@@ -176,8 +176,11 @@
                     <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="#book">Book Now</a></li>
                     <li class="nav-item"><a class="nav-link" href="#features">Why Us</a></li>
+                    {{-- ECOMMERCE ADDON
                     <li class="nav-item"><a class="nav-link" href="{{ route('shop.index') }}">Shop</a></li>
+                    ECOMMERCE ADDON --}}
                     <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                    {{-- ECOMMERCE ADDON
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="{{ route('shop.cart') }}">
                             <i class="fas fa-shopping-cart"></i>
@@ -185,6 +188,7 @@
                             <span class="badge bg-danger rounded-pill position-absolute" id="cartBadge" style="top:0;right:0;font-size:0.65rem;{{ $cartCount ? '' : 'display:none;' }}">{{ $cartCount }}</span>
                         </a>
                     </li>
+                    ECOMMERCE ADDON --}}
                     <li class="nav-item ms-lg-3">
                         <a class="nav-link btn-nav-login" href="{{ route('login') }}">
                             <i class="fas fa-user me-1"></i> Admin
