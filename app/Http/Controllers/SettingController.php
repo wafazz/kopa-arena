@@ -49,13 +49,19 @@ class SettingController extends Controller
             Setting::set('logo_white', 'uploads/' . $filename);
         }
 
-        // SenangPay + OnSend text fields
+        // Payment gateway + OnSend text fields
         $textFields = [
+            'payment_gateway',
             'senangpay_mode',
             'senangpay_sandbox_merchant_id',
             'senangpay_sandbox_secret_key',
             'senangpay_production_merchant_id',
             'senangpay_production_secret_key',
+            'toyyibpay_mode',
+            'toyyibpay_sandbox_secret_key',
+            'toyyibpay_sandbox_category_code',
+            'toyyibpay_production_secret_key',
+            'toyyibpay_production_category_code',
             'onsend_api_token',
         ];
         foreach ($textFields as $key) {

@@ -202,7 +202,7 @@
                                 </div>
                             </div>
 
-                            @if($senangpayEnabled)
+                            @if($onlinePaymentEnabled)
                             <input type="hidden" name="payment_method" value="online">
                             @endif
 

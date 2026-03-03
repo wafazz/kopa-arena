@@ -88,6 +88,50 @@
     </div>
 </div>
 
+<!-- PAYMENT GATEWAY SELECTOR -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="au-card m-b-30">
+            <div class="au-card-inner">
+                <h3 class="title-2 m-b-25"><i class="zmdi zmdi-card"></i> Payment Gateway</h3>
+                <form action="{{ route('settings.update') }}" method="POST">
+                    @csrf
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Active Gateway</label>
+                            <p class="text-muted" style="font-size:0.85rem;">Select which payment gateway to use for online payments, or None for cash-only.</p>
+                        </div>
+                        <div class="col-md-8">
+                            <select name="payment_gateway" class="form-select">
+                                <option value="none" {{ Setting::get('payment_gateway', 'none') === 'none' ? 'selected' : '' }}>None (Cash Only)</option>
+                                <option value="senangpay" {{ Setting::get('payment_gateway') === 'senangpay' ? 'selected' : '' }}>SenangPay</option>
+                                <option value="toyyibpay" {{ Setting::get('payment_gateway') === 'toyyibpay' ? 'selected' : '' }}>ToyyibPay</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="au-btn au-btn-icon au-btn--green">
+                            <i class="zmdi zmdi-check"></i>save gateway setting</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="au-card m-b-30">
+            <div class="au-card-inner">
+                <h3 class="title-2 m-b-25"><i class="zmdi zmdi-info-outline"></i> Gateway Info</h3>
+                <ul class="list-unstyled mb-0" style="font-size:13px;">
+                    <li class="mb-2"><i class="zmdi zmdi-check text-success me-2"></i>Only <strong>one gateway</strong> can be active at a time</li>
+                    <li class="mb-2"><i class="zmdi zmdi-check text-success me-2"></i>Set to <strong>None</strong> for cash-only mode</li>
+                    <li class="mb-2"><i class="zmdi zmdi-alert-circle text-warning me-2"></i>Configure credentials below before activating</li>
+                    <li><i class="zmdi zmdi-alert-circle text-warning me-2"></i>Both gateways share the same return/callback URLs</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- SENANGPAY SETTINGS -->
 <div class="row">
     <div class="col-lg-8">
@@ -180,6 +224,99 @@
         </div>
     </div>
 </div>
+<!-- TOYYIBPAY SETTINGS -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="au-card m-b-30">
+            <div class="au-card-inner">
+                <h3 class="title-2 m-b-25"><i class="zmdi zmdi-card"></i> ToyyibPay Payment Gateway</h3>
+                <form action="{{ route('settings.update') }}" method="POST">
+                    @csrf
+
+                    <!-- Mode -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Mode</label>
+                            <p class="text-muted" style="font-size:0.85rem;">Select sandbox for testing or production for live payments.</p>
+                        </div>
+                        <div class="col-md-8">
+                            <select name="toyyibpay_mode" class="form-select">
+                                <option value="sandbox" {{ Setting::get('toyyibpay_mode', 'sandbox') === 'sandbox' ? 'selected' : '' }}>Sandbox (Testing)</option>
+                                <option value="production" {{ Setting::get('toyyibpay_mode') === 'production' ? 'selected' : '' }}>Production (Live)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Sandbox Credentials -->
+                    <h5 class="mb-3"><i class="zmdi zmdi-bug me-2"></i> Sandbox Credentials</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Secret Key</label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" name="toyyibpay_sandbox_secret_key" class="form-control" value="{{ Setting::get('toyyibpay_sandbox_secret_key') }}" placeholder="Sandbox Secret Key">
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Category Code</label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" name="toyyibpay_sandbox_category_code" class="form-control" value="{{ Setting::get('toyyibpay_sandbox_category_code') }}" placeholder="Sandbox Category Code">
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Production Credentials -->
+                    <h5 class="mb-3"><i class="zmdi zmdi-shield-check me-2"></i> Production Credentials</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Secret Key</label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" name="toyyibpay_production_secret_key" class="form-control" value="{{ Setting::get('toyyibpay_production_secret_key') }}" placeholder="Production Secret Key">
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Category Code</label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" name="toyyibpay_production_category_code" class="form-control" value="{{ Setting::get('toyyibpay_production_category_code') }}" placeholder="Production Category Code">
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit" class="au-btn au-btn-icon au-btn--green">
+                            <i class="zmdi zmdi-check"></i>save toyyibpay settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOYYIBPAY INFO SIDEBAR -->
+    <div class="col-lg-4">
+        <div class="au-card m-b-30">
+            <div class="au-card-inner">
+                <h3 class="title-2 m-b-25"><i class="zmdi zmdi-info-outline"></i> ToyyibPay Setup</h3>
+                <ul class="list-unstyled mb-0" style="font-size:13px;">
+                    <li class="mb-2"><i class="zmdi zmdi-check text-success me-2"></i>Register at <strong>toyyibpay.com</strong></li>
+                    <li class="mb-2"><i class="zmdi zmdi-check text-success me-2"></i>Get Secret Key from your account settings</li>
+                    <li class="mb-2"><i class="zmdi zmdi-check text-success me-2"></i>Create a Category and copy the Category Code</li>
+                    <li class="mb-3"><i class="zmdi zmdi-check text-success me-2"></i>Use Sandbox (dev.toyyibpay.com) for testing</li>
+                    <li class="mb-2"><i class="zmdi zmdi-alert-circle text-warning me-2"></i><strong>In your ToyyibPay category, set:</strong></li>
+                    <li class="mb-2" style="padding-left:20px;"><strong>Return URL:</strong><br><code style="font-size:11px;">{{ url('/payment/return') }}</code></li>
+                    <li class="mb-2" style="padding-left:20px;"><strong>Callback URL:</strong><br><code style="font-size:11px;">{{ url('/payment/callback') }}</code></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ONSEND WHATSAPP SETTINGS -->
 <div class="row">
     <div class="col-lg-8">

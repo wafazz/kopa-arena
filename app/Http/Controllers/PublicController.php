@@ -29,10 +29,10 @@ class PublicController extends Controller
             'bookings' => Booking::where('status', 'approved')->count(),
         ];
 
-        $config = $this->getSenangPayConfig();
-        $senangpayEnabled = !empty($config['merchant_id']) && !empty($config['secret_key']);
+        $activeGateway = $this->getActiveGateway();
+        $onlinePaymentEnabled = $activeGateway['gateway'] !== 'none';
 
-        return view('landing', compact('branches', 'facilities', 'pricingRules', 'stats', 'senangpayEnabled'));
+        return view('landing', compact('branches', 'facilities', 'pricingRules', 'stats', 'onlinePaymentEnabled'));
     }
 
     public function bookedSlots(Request $request)
@@ -135,8 +135,8 @@ class PublicController extends Controller
         }
 
         $paymentMethod = $request->input('payment_method', 'cash');
-        $config = $this->getSenangPayConfig();
-        $isOnline = $paymentMethod === 'online' && !empty($config['merchant_id']) && !empty($config['secret_key']);
+        $activeGateway = $this->getActiveGateway();
+        $isOnline = $paymentMethod === 'online' && $activeGateway['gateway'] !== 'none';
 
         // Team B joining match
         if ($request->match_parent_id) {
@@ -175,7 +175,7 @@ class PublicController extends Controller
 
             if ($isOnline && $booking) {
                 $this->sendWhatsAppNotification($booking);
-                return $this->redirectToSenangPay($booking, $config);
+                return $this->redirectToGateway($booking, $activeGateway);
             }
 
             if ($booking) {
@@ -215,7 +215,7 @@ class PublicController extends Controller
 
         if ($isOnline && $booking) {
             $this->sendWhatsAppNotification($booking);
-            return $this->redirectToSenangPay($booking, $config);
+            return $this->redirectToGateway($booking, $activeGateway);
         }
 
         if ($booking) {
@@ -226,6 +226,14 @@ class PublicController extends Controller
     }
 
     public function paymentReturn(Request $request)
+    {
+        if ($request->has('billcode')) {
+            return $this->toyyibPayReturn($request);
+        }
+        return $this->senangPayReturn($request);
+    }
+
+    private function senangPayReturn(Request $request)
     {
         $statusId = $request->query('status_id');
         $orderId = $request->query('order_id');
@@ -266,7 +274,57 @@ class PublicController extends Controller
         return redirect()->route('landing')->with('info', 'Payment was not completed. Your booking is saved — you can pay at the venue.');
     }
 
+    private function toyyibPayReturn(Request $request)
+    {
+        $statusId = $request->query('status_id');
+        $billcode = $request->query('billcode');
+        $orderId = $request->query('order_id');
+        $transactionId = $request->query('transaction_id');
+        $msg = $request->query('msg');
+        $hash = $request->query('hash');
+
+        $config = $this->getToyyibPayConfig();
+        $secretKey = $config['secret_key'];
+
+        $expectedHash = md5($secretKey . $statusId . $orderId . $transactionId . $msg);
+
+        if ($hash !== $expectedHash) {
+            return redirect()->route('landing')->with('error', 'Invalid payment response.');
+        }
+
+        $bookingId = str_replace('KOPA-', '', $orderId);
+        $booking = Booking::find($bookingId);
+
+        if (!$booking) {
+            return redirect()->route('landing')->with('error', 'Booking not found.');
+        }
+
+        if ($statusId == 1) {
+            $booking->update([
+                'payment_status' => 'full_payment',
+                'payment_type' => 'online',
+                'paid_at' => now(),
+                'transaction_id' => $billcode,
+            ]);
+            return redirect()->route('landing')->with('success', 'Payment successful! Your booking has been confirmed.');
+        }
+
+        if ($statusId == 3) {
+            return redirect()->route('landing')->with('info', 'Payment is being processed. We\'ll update your booking once confirmed.');
+        }
+
+        return redirect()->route('landing')->with('info', 'Payment was not completed. Your booking is saved — you can pay at the venue.');
+    }
+
     public function paymentCallback(Request $request)
+    {
+        if ($request->has('billcode')) {
+            return $this->toyyibPayCallback($request);
+        }
+        return $this->senangPayCallback($request);
+    }
+
+    private function senangPayCallback(Request $request)
     {
         $statusId = $request->input('status_id');
         $orderId = $request->input('order_id');
@@ -296,6 +354,43 @@ class PublicController extends Controller
                 'payment_type' => 'online',
                 'paid_at' => now(),
                 'transaction_id' => $transactionId,
+            ]);
+        }
+
+        return response('OK');
+    }
+
+    private function toyyibPayCallback(Request $request)
+    {
+        $statusId = $request->input('status_id');
+        $billcode = $request->input('billcode');
+        $orderId = $request->input('order_id');
+        $transactionId = $request->input('transaction_id');
+        $msg = $request->input('msg');
+        $hash = $request->input('hash');
+
+        $config = $this->getToyyibPayConfig();
+        $secretKey = $config['secret_key'];
+
+        $expectedHash = md5($secretKey . $statusId . $orderId . $transactionId . $msg);
+
+        if ($hash !== $expectedHash) {
+            return response('FAIL', 400);
+        }
+
+        $bookingId = str_replace('KOPA-', '', $orderId);
+        $booking = Booking::find($bookingId);
+
+        if (!$booking) {
+            return response('NOT FOUND', 404);
+        }
+
+        if ($statusId == 1) {
+            $booking->update([
+                'payment_status' => 'full_payment',
+                'payment_type' => 'online',
+                'paid_at' => now(),
+                'transaction_id' => $billcode,
             ]);
         }
 
@@ -439,6 +534,49 @@ class PublicController extends Controller
         }
     }
 
+    private function getActiveGateway()
+    {
+        $gateway = Setting::get('payment_gateway', 'none');
+
+        if ($gateway === 'senangpay') {
+            $config = $this->getSenangPayConfig();
+            if (!empty($config['merchant_id']) && !empty($config['secret_key'])) {
+                return ['gateway' => 'senangpay', 'config' => $config];
+            }
+        }
+
+        if ($gateway === 'toyyibpay') {
+            $config = $this->getToyyibPayConfig();
+            if (!empty($config['secret_key']) && !empty($config['category_code'])) {
+                return ['gateway' => 'toyyibpay', 'config' => $config];
+            }
+        }
+
+        return ['gateway' => 'none', 'config' => []];
+    }
+
+    private function getToyyibPayConfig()
+    {
+        $mode = Setting::get('toyyibpay_mode', 'sandbox');
+        $prefix = 'toyyibpay_' . $mode . '_';
+        return [
+            'mode' => $mode,
+            'secret_key' => Setting::get($prefix . 'secret_key'),
+            'category_code' => Setting::get($prefix . 'category_code'),
+            'base_url' => $mode === 'production'
+                ? 'https://toyyibpay.com'
+                : 'https://dev.toyyibpay.com',
+        ];
+    }
+
+    private function redirectToGateway($booking, $activeGateway)
+    {
+        if ($activeGateway['gateway'] === 'toyyibpay') {
+            return $this->redirectToToyyibPay($booking, $activeGateway['config']);
+        }
+        return $this->redirectToSenangPay($booking, $activeGateway['config']);
+    }
+
     private function redirectToSenangPay($booking, $config)
     {
         $orderId = 'KOPA-' . $booking->id;
@@ -460,5 +598,47 @@ class PublicController extends Controller
         ]);
 
         return redirect($url . '?' . $params);
+    }
+
+    private function redirectToToyyibPay($booking, $config)
+    {
+        $orderId = 'KOPA-' . $booking->id;
+        $facility = $booking->facility;
+        $detail = 'Booking ' . $facility->name . ' ' . $booking->booking_date->format('Y-m-d');
+        $amount = intval(round($booking->amount * 100)); // cents
+
+        $phone = preg_replace('/[^0-9]/', '', $booking->customer_phone);
+
+        try {
+            $response = Http::asForm()->post($config['base_url'] . '/index.php/api/createBill', [
+                'userSecretKey' => $config['secret_key'],
+                'categoryCode' => $config['category_code'],
+                'billName' => $detail,
+                'billDescription' => $detail,
+                'billPriceSetting' => 1, // fixed
+                'billPayorInfo' => 1, // required
+                'billAmount' => $amount,
+                'billReturnUrl' => url('/payment/return'),
+                'billCallbackUrl' => url('/payment/callback'),
+                'billExternalReferenceNo' => $orderId,
+                'billTo' => $booking->customer_name,
+                'billEmail' => $booking->customer_email ?? '',
+                'billPhone' => $phone,
+                'billPaymentChannel' => 0, // FPX only
+            ]);
+
+            $result = $response->json();
+
+            if (isset($result[0]['BillCode'])) {
+                $billCode = $result[0]['BillCode'];
+                return redirect($config['base_url'] . '/' . $billCode);
+            }
+
+            Log::error('ToyyibPay createBill failed', ['response' => $result]);
+            return redirect()->route('landing')->with('error', 'Payment gateway error. Your booking is saved — you can pay at the venue.');
+        } catch (\Exception $e) {
+            Log::error('ToyyibPay redirect failed: ' . $e->getMessage());
+            return redirect()->route('landing')->with('error', 'Payment gateway error. Your booking is saved — you can pay at the venue.');
+        }
     }
 }
