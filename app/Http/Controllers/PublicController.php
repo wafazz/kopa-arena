@@ -615,8 +615,8 @@ class PublicController extends Controller
                 'categoryCode' => $config['category_code'],
                 'billName' => $detail,
                 'billDescription' => $detail,
-                'billPriceSetting' => 1, // fixed
-                'billPayorInfo' => 1, // required
+                'billPriceSetting' => 1,
+                'billPayorInfo' => 1,
                 'billAmount' => $amount,
                 'billReturnUrl' => url('/payment/return'),
                 'billCallbackUrl' => url('/payment/callback'),
@@ -624,7 +624,12 @@ class PublicController extends Controller
                 'billTo' => $booking->customer_name,
                 'billEmail' => $booking->customer_email ?? '',
                 'billPhone' => $phone,
-                'billPaymentChannel' => 0, // FPX only
+                'billSplitPayment' => 0,
+                'billSplitPaymentArgs' => '',
+                'billPaymentChannel' => 0,
+                'billContentEmail' => 'Thank you for your booking at ' . $facility->name . '!',
+                'billChargeToCustomer' => 1,
+                'billExpiryDays' => 3,
             ]);
 
             $result = $response->json();
