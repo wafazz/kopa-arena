@@ -110,12 +110,6 @@
     border: 1px solid rgba(49, 104, 242, 0.3);
 }
 .btn-profile-password:hover { color: #fff; background: rgba(49, 104, 242, 0.25); }
-.btn-profile-delete {
-    background: rgba(231, 74, 90, 0.1);
-    color: #e74a5a;
-    border: 1px solid rgba(231, 74, 90, 0.2);
-}
-.btn-profile-delete:hover { color: #fff; background: rgba(231, 74, 90, 0.2); }
 </style>
 @endpush
 
@@ -202,44 +196,10 @@
                 <a href="{{ route('profile.password') }}" class="btn btn-profile btn-profile-password">
                     <i class="fas fa-lock me-1"></i> Change Password
                 </a>
-                <button type="button" class="btn btn-profile btn-profile-delete" id="delete-account-btn">
-                    <i class="fas fa-trash me-1"></i> Delete Account
-                </button>
             </div>
         </div>
     </div>
 </div>
 
-<form id="delete-account-form" method="post" action="{{ route('profile.destroy') }}">
-    @csrf
-    @method('delete')
-    <input type="hidden" name="password" id="delete_password_hidden">
-</form>
 @endsection
-
-@push('scripts')
-<script>
-document.getElementById('delete-account-btn').addEventListener('click', function() {
-    Swal.fire({
-        title: 'Delete Account?',
-        text: "This action cannot be undone. Please enter your password to confirm.",
-        icon: 'warning',
-        input: 'password',
-        inputPlaceholder: 'Enter your password',
-        inputAttributes: { autocomplete: 'current-password' },
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, delete my account!',
-        inputValidator: (value) => {
-            if (!value) return 'Password is required!';
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('delete_password_hidden').value = result.value;
-            document.getElementById('delete-account-form').submit();
-        }
-    });
-});
-</script>
 @endpush
