@@ -166,7 +166,7 @@ class CloseSaleController extends Controller
         $facilities = Facility::with('branch', 'slotTimeRule', 'pricings')
             ->where('status', 'active')
             ->get();
-        $pricingRules = PricingRule::with('branches')->get();
+        $pricingRules = PricingRule::with('facilities')->get();
         $branchId = $request->branch_id;
 
         return view('close-sales.walkin', compact('facilities', 'pricingRules', 'branchId'));
@@ -204,8 +204,8 @@ class CloseSaleController extends Controller
         $dayOfWeek = $bookingDate->dayOfWeek;
         $amount = 0;
 
-        $pricingRule = PricingRule::whereHas('branches', function ($q) use ($facility) {
-            $q->where('branches.id', $facility->branch_id);
+        $pricingRule = PricingRule::whereHas('facilities', function ($q) use ($facility) {
+            $q->where('facilities.id', $facility->id);
         })->where(function ($q) use ($dayOfWeek) {
             $q->where('day_of_week', $dayOfWeek)->orWhereNull('day_of_week');
         })->orderByRaw('day_of_week IS NULL ASC')->first();

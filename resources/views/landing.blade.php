@@ -585,15 +585,15 @@ function updatePrice() {
     var facility = facilityData[opt.value];
     if (!facility) { infoPrice.textContent = '-'; return; }
 
-    var branchId = facility.branch_id;
+    var facilityId = facility.id;
     var dayOfWeek = new Date(bookingDate).getDay();
 
     var matchedRule = null;
     var fallbackRule = null;
     for (var i = 0; i < pricingRules.length; i++) {
         var rule = pricingRules[i];
-        var branchIds = rule.branches.map(function(b) { return b.id; });
-        if (branchIds.indexOf(branchId) === -1) continue;
+        var facilityIds = rule.facilities.map(function(f) { return f.id; });
+        if (facilityIds.indexOf(facilityId) === -1) continue;
         if (rule.day_of_week !== null && rule.day_of_week === dayOfWeek) {
             matchedRule = rule;
             break;

@@ -35,4 +35,9 @@ class Facility extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    public function pricingRules()
+    {
+        return $this->belongsToMany(PricingRule::class, 'facility_pricing_rule');
+    }
 }

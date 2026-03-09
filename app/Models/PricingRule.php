@@ -20,4 +20,9 @@ class PricingRule extends Model
     {
         return $this->belongsToMany(Branch::class, 'branch_pricing_rule');
     }
+
+    public function facilities()
+    {
+        return $this->belongsToMany(Facility::class, 'facility_pricing_rule');
+    }
 }

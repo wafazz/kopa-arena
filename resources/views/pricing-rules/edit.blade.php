@@ -56,18 +56,23 @@
                     </div>
 
                     <hr>
-                    <h3 class="title-2 m-b-25">Assign to Branches</h3>
-                    <div class="row">
-                        @foreach($branches as $branch)
-                        <div class="col-md-4 mb-2">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="branches[]" value="{{ $branch->id }}" id="branch_{{ $branch->id }}"
-                                    {{ in_array($branch->id, old('branches', $assignedBranches)) ? 'checked' : '' }}>
-                                <label class="form-check-label" for="branch_{{ $branch->id }}">{{ $branch->name }}</label>
+                    <h3 class="title-2 m-b-25">Assign to Facilities</h3>
+                    @foreach($facilities as $branchId => $branchFacilities)
+                    <div class="mb-3">
+                        <h5 class="mb-2"><i class="zmdi zmdi-store"></i> {{ $branches[$branchId]->name }}</h5>
+                        <div class="row ms-2">
+                            @foreach($branchFacilities as $facility)
+                            <div class="col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="facilities[]" value="{{ $facility->id }}" id="facility_{{ $facility->id }}"
+                                        {{ in_array($facility->id, old('facilities', $assignedFacilities)) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="facility_{{ $facility->id }}">{{ $facility->name }}</label>
+                                </div>
                             </div>
+                            @endforeach
                         </div>
-                        @endforeach
                     </div>
+                    @endforeach
 
                     <button type="submit" class="au-btn au-btn--green mt-3">Update Rule</button>
                 </form>

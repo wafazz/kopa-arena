@@ -24,7 +24,7 @@
                         <th>Normal Price</th>
                         <th>Peak Hours</th>
                         <th>Peak Price</th>
-                        <th>Branches</th>
+                        <th>Facilities</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -53,10 +53,10 @@
                             @endif
                         </td>
                         <td>
-                            @foreach($rule->branches as $branch)
-                                <span class="badge bg-info">{{ $branch->name }}</span>
+                            @foreach($rule->facilities as $facility)
+                                <span class="badge bg-info">{{ $facility->name }} <small>({{ $facility->branch->name }})</small></span>
                             @endforeach
-                            @if($rule->branches->isEmpty())
+                            @if($rule->facilities->isEmpty())
                                 <span class="text-muted">None</span>
                             @endif
                         </td>

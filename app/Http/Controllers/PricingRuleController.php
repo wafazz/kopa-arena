@@ -5,20 +5,26 @@ namespace App\Http\Controllers;
 use App\Models\ActivityLog;
 use App\Models\PricingRule;
 use App\Models\Branch;
+use App\Models\Facility;
 use Illuminate\Http\Request;
 
 class PricingRuleController extends Controller
 {
     public function index()
     {
-        $pricingRules = PricingRule::with('branches')->latest()->get();
+        $pricingRules = PricingRule::with('facilities.branch')->latest()->get();
         return view('pricing-rules.index', compact('pricingRules'));
     }
 
     public function create()
     {
-        $branches = Branch::where('status', 'active')->get();
-        return view('pricing-rules.create', compact('branches'));
+        $facilities = Facility::with('branch')
+            ->where('status', 'active')
+            ->whereHas('branch', fn($q) => $q->where('status', 'active'))
+            ->get()
+            ->groupBy('branch_id');
+        $branches = Branch::where('status', 'active')->get()->keyBy('id');
+        return view('pricing-rules.create', compact('facilities', 'branches'));
     }
 
     public function store(Request $request)
@@ -30,12 +36,12 @@ class PricingRuleController extends Controller
             'peak_price' => 'nullable|numeric|min:0',
             'peak_start' => 'nullable|date_format:H:i',
             'peak_end' => 'nullable|date_format:H:i',
-            'branches' => 'nullable|array',
-            'branches.*' => 'exists:branches,id',
+            'facilities' => 'nullable|array',
+            'facilities.*' => 'exists:facilities,id',
         ]);
 
         $rule = PricingRule::create($request->only('name', 'day_of_week', 'normal_price', 'peak_price', 'peak_start', 'peak_end'));
-        $rule->branches()->sync($request->branches ?? []);
+        $rule->facilities()->sync($request->facilities ?? []);
 
         ActivityLog::log('store', 'PricingRule', $rule->id, $rule->name);
         return redirect()->route('pricing-rules.index')->with('success', 'Pricing rule created successfully.');
@@ -43,9 +49,14 @@ class PricingRuleController extends Controller
 
     public function edit(PricingRule $pricingRule)
     {
-        $branches = Branch::where('status', 'active')->get();
-        $assignedBranches = $pricingRule->branches->pluck('id')->toArray();
-        return view('pricing-rules.edit', compact('pricingRule', 'branches', 'assignedBranches'));
+        $facilities = Facility::with('branch')
+            ->where('status', 'active')
+            ->whereHas('branch', fn($q) => $q->where('status', 'active'))
+            ->get()
+            ->groupBy('branch_id');
+        $branches = Branch::where('status', 'active')->get()->keyBy('id');
+        $assignedFacilities = $pricingRule->facilities->pluck('id')->toArray();
+        return view('pricing-rules.edit', compact('pricingRule', 'facilities', 'branches', 'assignedFacilities'));
     }
 
     public function update(Request $request, PricingRule $pricingRule)
@@ -57,12 +68,12 @@ class PricingRuleController extends Controller
             'peak_price' => 'nullable|numeric|min:0',
             'peak_start' => 'nullable|date_format:H:i',
             'peak_end' => 'nullable|date_format:H:i',
-            'branches' => 'nullable|array',
-            'branches.*' => 'exists:branches,id',
+            'facilities' => 'nullable|array',
+            'facilities.*' => 'exists:facilities,id',
         ]);
 
         $pricingRule->update($request->only('name', 'day_of_week', 'normal_price', 'peak_price', 'peak_start', 'peak_end'));
-        $pricingRule->branches()->sync($request->branches ?? []);
+        $pricingRule->facilities()->sync($request->facilities ?? []);
 
         ActivityLog::log('update', 'PricingRule', $pricingRule->id, $pricingRule->name);
         return redirect()->route('pricing-rules.index')->with('success', 'Pricing rule updated successfully.');
