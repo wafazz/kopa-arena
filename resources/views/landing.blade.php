@@ -476,15 +476,18 @@ function buildTimeSlots() {
     var parts_l = latest.split(':').map(Number);
     var startMin = parts_e[0] * 60 + parts_e[1];
     var endMin = parts_l[0] * 60 + parts_l[1];
+    var crossesMidnight = endMin < startMin;
+    if (crossesMidnight) endMin += 1440;
 
     var slots = [];
     for (var m = startMin; m <= endMin; m += interval) {
-        var h = String(Math.floor(m / 60)).padStart(2, '0');
-        var min = String(m % 60).padStart(2, '0');
+        var actual = m % 1440;
+        var h = String(Math.floor(actual / 60)).padStart(2, '0');
+        var min = String(actual % 60).padStart(2, '0');
         var val = h + ':' + min;
-        var ampm = m < 720 ? 'AM' : 'PM';
-        var h12 = Math.floor(m / 60) % 12 || 12;
-        var label = h12 + ':' + min + ' ' + ampm;
+        var ampm = actual < 720 ? 'AM' : 'PM';
+        var h12 = Math.floor(actual / 60) % 12 || 12;
+        var label = h12 + ':' + min + ' ' + ampm + (m >= 1440 ? ' (+1)' : '');
         slots.push({ value: val, label: label, minutes: m });
     }
 
@@ -504,9 +507,13 @@ function buildTimeSlots() {
             var bookedRanges = parentBookings.map(function(b) {
                 var sp = b.start_time.substring(0, 5).split(':').map(Number);
                 var ep = b.end_time.substring(0, 5).split(':').map(Number);
+                var bStart = sp[0] * 60 + sp[1];
+                var bEnd = ep[0] * 60 + ep[1];
+                if (crossesMidnight && bStart < startMin) bStart += 1440;
+                if (bEnd <= bStart) bEnd += 1440;
                 return {
-                    start: sp[0] * 60 + sp[1],
-                    end: ep[0] * 60 + ep[1],
+                    start: bStart,
+                    end: bEnd,
                     type: b.type,
                     status: b.status,
                     match_id: b.match_id,

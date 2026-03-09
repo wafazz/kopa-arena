@@ -411,11 +411,11 @@ class PublicController extends Controller
         if ($booking->isCheckedIn()) {
             return back()->with('error', 'Already checked in.');
         }
-        if (!$booking->booking_date->isToday()) {
+        if (!$booking->isBookingToday()) {
             return back()->with('error', 'Self check-in is only available on the booking date.');
         }
 
-        $startTime = \Carbon\Carbon::parse($booking->booking_date->format('Y-m-d') . ' ' . $booking->start_time);
+        $startTime = $booking->getActualStartTime();
         $minutesUntilStart = now()->diffInMinutes($startTime, false);
 
         if ($minutesUntilStart > 30) {

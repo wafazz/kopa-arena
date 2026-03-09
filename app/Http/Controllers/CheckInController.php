@@ -47,10 +47,10 @@ class CheckInController extends Controller
             $error = 'This booking is not approved. Current status: ' . ucfirst($booking->status);
         } elseif ($booking->isCheckedIn()) {
             $error = 'Already checked in at ' . $booking->checked_in_at->format('d M Y, g:i A');
-        } elseif (!$booking->booking_date->isToday()) {
+        } elseif (!$booking->isBookingToday()) {
             $error = 'This booking is for ' . $booking->booking_date->format('d M Y') . ', not today.';
         } else {
-            $startTime = Carbon::parse($booking->booking_date->format('Y-m-d') . ' ' . $booking->start_time);
+            $startTime = $booking->getActualStartTime();
             $minutesUntilStart = now()->diffInMinutes($startTime, false);
             if ($minutesUntilStart > 30) {
                 $error = 'Check-in opens 30 minutes before booking time (' . $startTime->format('g:i A') . '). Please try again later.';
@@ -75,11 +75,11 @@ class CheckInController extends Controller
         if ($booking->isCheckedIn()) {
             return redirect()->route('checkins.scan')->with('error', 'Already checked in.');
         }
-        if (!$booking->booking_date->isToday()) {
+        if (!$booking->isBookingToday()) {
             return redirect()->route('checkins.scan')->with('error', 'Booking is not for today.');
         }
 
-        $startTime = Carbon::parse($booking->booking_date->format('Y-m-d') . ' ' . $booking->start_time);
+        $startTime = $booking->getActualStartTime();
         $minutesUntilStart = now()->diffInMinutes($startTime, false);
         if ($minutesUntilStart > 30) {
             return redirect()->route('checkins.scan')->with('error', 'Check-in opens 30 minutes before booking time (' . $startTime->format('g:i A') . ').');

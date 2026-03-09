@@ -28,17 +28,17 @@ class SendBookingReminders extends Command
             return;
         }
 
-        $bookings = Booking::with('facility.branch')
+        $bookings = Booking::with('facility.branch', 'facility.slotTimeRule')
             ->where('status', 'approved')
             ->whereNull('checked_in_at')
-            ->where('booking_date', today())
+            ->whereIn('booking_date', [today(), today()->subDay()])
             ->whereNotNull('customer_phone')
             ->get();
 
         $sent = 0;
 
         foreach ($bookings as $booking) {
-            $startTime = Carbon::parse($booking->booking_date->format('Y-m-d') . ' ' . $booking->start_time);
+            $startTime = $booking->getActualStartTime();
             $minutesUntil = now()->diffInMinutes($startTime, false);
             $remindersSent = $booking->reminders_sent ?? [];
 
