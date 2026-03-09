@@ -80,31 +80,27 @@ class BookingController extends Controller
         $dayOfWeek = $bookingDate->dayOfWeek;
         $amount = 0;
 
-        $pricingRule = PricingRule::whereHas('facilities', function ($q) use ($facility) {
+        $pricingRules = PricingRule::whereHas('facilities', function ($q) use ($facility) {
             $q->where('facilities.id', $facility->id);
         })->where(function ($q) use ($dayOfWeek) {
             $q->where('day_of_week', $dayOfWeek)->orWhereNull('day_of_week');
-        })->orderByRaw('day_of_week IS NULL ASC')->first();
+        })->orderByRaw('day_of_week IS NULL ASC')->get();
 
-        if ($pricingRule) {
-            $amount = $pricingRule->normal_price;
+        $pricing = $facility->pricings()->first();
+        if ($pricing) {
+            $amount = $pricing->normal_price;
+        }
+
+        foreach ($pricingRules as $pricingRule) {
             if ($pricingRule->peak_start && $pricingRule->peak_end && $pricingRule->peak_price) {
                 $peakStart = \Carbon\Carbon::createFromFormat('H:i', substr($pricingRule->peak_start, 0, 5));
                 $peakEnd = \Carbon\Carbon::createFromFormat('H:i', substr($pricingRule->peak_end, 0, 5));
-                if ($startTime->between($peakStart, $peakEnd) || $startTime->eq($peakStart)) {
+                $inPeak = $peakEnd->lt($peakStart)
+                    ? ($startTime->gte($peakStart) || $startTime->lte($peakEnd))
+                    : ($startTime->between($peakStart, $peakEnd) || $startTime->eq($peakStart));
+                if ($inPeak) {
                     $amount = $pricingRule->peak_price;
-                }
-            }
-        } else {
-            $pricing = $facility->pricings()->first();
-            if ($pricing) {
-                $amount = $pricing->normal_price;
-                if ($pricing->peak_start && $pricing->peak_end) {
-                    $peakStart = \Carbon\Carbon::createFromFormat('H:i', substr($pricing->peak_start, 0, 5));
-                    $peakEnd = \Carbon\Carbon::createFromFormat('H:i', substr($pricing->peak_end, 0, 5));
-                    if ($startTime->between($peakStart, $peakEnd) || $startTime->eq($peakStart)) {
-                        $amount = $pricing->peak_price;
-                    }
+                    break;
                 }
             }
         }

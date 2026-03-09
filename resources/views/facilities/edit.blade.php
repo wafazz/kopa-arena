@@ -50,46 +50,13 @@
                     </div>
 
                     <hr>
-                    <h3 class="title-2 m-b-25">Slot Time Rules</h3>
-                    @php $rule = $facility->slotTimeRule; @endphp
-                    <div class="row">
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Slot Duration (min)</label>
-                            <input type="number" name="slot_duration" class="form-control" value="{{ old('slot_duration', $rule->slot_duration ?? 90) }}" required>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Slot Interval (min)</label>
-                            <input type="number" name="slot_interval" class="form-control" value="{{ old('slot_interval', $rule->slot_interval ?? 30) }}" required>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Earliest Start</label>
-                            <input type="time" name="earliest_start" class="form-control" value="{{ old('earliest_start', $rule ? substr($rule->earliest_start, 0, 5) : '08:00') }}" required>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Latest Start</label>
-                            <input type="time" name="latest_start" class="form-control" value="{{ old('latest_start', $rule ? substr($rule->latest_start, 0, 5) : '22:00') }}" required>
-                        </div>
-                    </div>
-
-                    <hr>
                     <h3 class="title-2 m-b-25">Pricing</h3>
                     @php $pricing = $facility->pricings->first(); @endphp
                     <div class="row">
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Normal Price (RM) <span class="text-danger">*</span></label>
                             <input type="number" name="normal_price" class="form-control" step="0.01" value="{{ old('normal_price', $pricing->normal_price ?? 0) }}" required>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Peak Price (RM)</label>
-                            <input type="number" name="peak_price" class="form-control" step="0.01" value="{{ old('peak_price', $pricing->peak_price ?? 0) }}">
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Peak Start</label>
-                            <input type="time" name="peak_start" class="form-control" value="{{ old('peak_start', $pricing ? substr($pricing->peak_start, 0, 5) : '') }}">
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Peak End</label>
-                            <input type="time" name="peak_end" class="form-control" value="{{ old('peak_end', $pricing ? substr($pricing->peak_end, 0, 5) : '') }}">
+                            <small class="text-muted">Peak hour pricing can be configured in Pricing Rules.</small>
                         </div>
                     </div>
 

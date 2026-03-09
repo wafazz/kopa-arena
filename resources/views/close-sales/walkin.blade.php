@@ -291,42 +291,28 @@ function updatePrice() {
     var facilityId = facility.id;
     var dayOfWeek = new Date(bookingDate).getDay();
 
-    var matchedRule = null;
-    var fallbackRule = null;
+    var activeRules = [];
     for (var i = 0; i < pricingRules.length; i++) {
         var rule = pricingRules[i];
         var facilityIds = rule.facilities.map(function(f) { return f.id; });
         if (facilityIds.indexOf(facilityId) === -1) continue;
-        if (rule.day_of_week !== null && rule.day_of_week === dayOfWeek) {
-            matchedRule = rule;
-            break;
-        }
-        if (rule.day_of_week === null && !fallbackRule) {
-            fallbackRule = rule;
+        if (rule.day_of_week === null || rule.day_of_week === dayOfWeek) {
+            activeRules.push(rule);
         }
     }
 
-    var activeRule = matchedRule || fallbackRule;
-    var price = 0;
+    var pricing = opt.dataset.pricing ? JSON.parse(opt.dataset.pricing) : null;
+    var price = pricing ? parseFloat(pricing.normal_price) : 0;
 
-    if (activeRule) {
-        price = parseFloat(activeRule.normal_price);
-        if (activeRule.peak_start && activeRule.peak_end && activeRule.peak_price) {
-            var ps = activeRule.peak_start.substring(0, 5);
-            var pe = activeRule.peak_end.substring(0, 5);
-            if (startTime >= ps && startTime <= pe) {
-                price = parseFloat(activeRule.peak_price);
-            }
-        }
-    } else {
-        var pricing = opt.dataset.pricing ? JSON.parse(opt.dataset.pricing) : null;
-        if (!pricing) { priceField.value = ''; infoPrice.textContent = '-'; return; }
-        price = parseFloat(pricing.normal_price);
-        if (pricing.peak_start && pricing.peak_end) {
-            var ps = pricing.peak_start.substring(0, 5);
-            var pe = pricing.peak_end.substring(0, 5);
-            if (startTime >= ps && startTime <= pe) {
-                price = parseFloat(pricing.peak_price);
+    for (var i = 0; i < activeRules.length; i++) {
+        var r = activeRules[i];
+        if (r.peak_start && r.peak_end && r.peak_price) {
+            var ps = r.peak_start.substring(0, 5);
+            var pe = r.peak_end.substring(0, 5);
+            var inPeak = pe < ps ? (startTime >= ps || startTime <= pe) : (startTime >= ps && startTime <= pe);
+            if (inPeak) {
+                price = parseFloat(r.peak_price);
+                break;
             }
         }
     }

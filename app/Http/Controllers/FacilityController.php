@@ -31,9 +31,6 @@ class FacilityController extends Controller
             'type' => 'required|in:football_field',
             'status' => 'required|in:active,maintenance,closed',
             'normal_price' => 'required|numeric|min:0',
-            'peak_price' => 'nullable|numeric|min:0',
-            'peak_start' => 'nullable|date_format:H:i',
-            'peak_end' => 'nullable|date_format:H:i',
         ]);
 
         $facility = Facility::create($request->only('branch_id', 'name', 'type', 'status'));
@@ -49,9 +46,7 @@ class FacilityController extends Controller
         Pricing::create([
             'facility_id' => $facility->id,
             'normal_price' => $request->normal_price,
-            'peak_price' => $request->peak_price ?? 0,
-            'peak_start' => $request->peak_start,
-            'peak_end' => $request->peak_end,
+            'peak_price' => $request->normal_price,
         ]);
 
         ActivityLog::log('store', 'Facility', $facility->id, $facility->name);
@@ -78,37 +73,20 @@ class FacilityController extends Controller
             'type' => 'required|in:football_field',
             'status' => 'required|in:active,maintenance,closed',
             'normal_price' => 'required|numeric|min:0',
-            'peak_price' => 'nullable|numeric|min:0',
-            'peak_start' => 'nullable|date_format:H:i',
-            'peak_end' => 'nullable|date_format:H:i',
-            'slot_duration' => 'required|integer|min:30',
-            'slot_interval' => 'required|integer|min:15',
-            'earliest_start' => 'required|date_format:H:i',
-            'latest_start' => 'required|date_format:H:i',
         ]);
 
         $facility->update($request->only('branch_id', 'name', 'type', 'status'));
-
-        $facility->slotTimeRule()->updateOrCreate(
-            ['facility_id' => $facility->id],
-            $request->only('slot_duration', 'slot_interval', 'earliest_start', 'latest_start')
-        );
 
         $pricing = $facility->pricings()->first();
         if ($pricing) {
             $pricing->update([
                 'normal_price' => $request->normal_price,
-                'peak_price' => $request->peak_price ?? 0,
-                'peak_start' => $request->peak_start,
-                'peak_end' => $request->peak_end,
             ]);
         } else {
             Pricing::create([
                 'facility_id' => $facility->id,
                 'normal_price' => $request->normal_price,
-                'peak_price' => $request->peak_price ?? 0,
-                'peak_start' => $request->peak_start,
-                'peak_end' => $request->peak_end,
+                'peak_price' => $request->normal_price,
             ]);
         }
 

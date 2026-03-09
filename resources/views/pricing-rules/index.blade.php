@@ -21,7 +21,6 @@
                         <th>ID</th>
                         <th>Name</th>
                         <th>Day</th>
-                        <th>Normal Price</th>
                         <th>Peak Hours</th>
                         <th>Peak Price</th>
                         <th>Facilities</th>
@@ -37,7 +36,6 @@
                         <td>{{ $rule->id }}</td>
                         <td>{{ $rule->name }}</td>
                         <td>{{ $rule->day_of_week !== null ? $days[$rule->day_of_week] : 'All Days' }}</td>
-                        <td>RM {{ number_format($rule->normal_price, 2) }}</td>
                         <td>
                             @if($rule->peak_start && $rule->peak_end)
                                 {{ \Carbon\Carbon::parse($rule->peak_start)->format('h:i A') }} - {{ \Carbon\Carbon::parse($rule->peak_end)->format('h:i A') }}

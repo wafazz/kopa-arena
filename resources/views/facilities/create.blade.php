@@ -53,21 +53,10 @@
                     <hr>
                     <h3 class="title-2 m-b-25">Pricing</h3>
                     <div class="row">
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Normal Price (RM) <span class="text-danger">*</span></label>
                             <input type="number" name="normal_price" class="form-control" step="0.01" value="{{ old('normal_price', '100.00') }}" required>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Peak Price (RM)</label>
-                            <input type="number" name="peak_price" class="form-control" step="0.01" value="{{ old('peak_price', '150.00') }}">
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Peak Start</label>
-                            <input type="time" name="peak_start" class="form-control" value="{{ old('peak_start', '18:00') }}">
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label class="form-label">Peak End</label>
-                            <input type="time" name="peak_end" class="form-control" value="{{ old('peak_end', '22:00') }}">
+                            <small class="text-muted">Peak hour pricing can be configured in Pricing Rules.</small>
                         </div>
                     </div>
 
