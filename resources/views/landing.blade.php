@@ -204,6 +204,41 @@
 
                             @if($onlinePaymentEnabled)
                             <input type="hidden" name="payment_method" value="online">
+
+                            <hr class="section-divider">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-credit-card me-2 text-muted"></i> Payment Option</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="payment-option-card active" id="optDeposit" onclick="selectPaymentOption('deposit')">
+                                        <input type="radio" name="payment_option" value="deposit" checked class="d-none">
+                                        <div class="d-flex align-items-center">
+                                            <div class="payment-option-icon" style="background:rgba(255,193,7,0.1);">
+                                                <i class="fas fa-coins text-warning"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">Pay Deposit</div>
+                                                <div class="text-muted" style="font-size:0.85rem;">{{ $depositPercentage }}% of total price</div>
+                                                <div class="fw-bold text-warning" id="depositPriceLabel">RM 0.00</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="payment-option-card" id="optFull" onclick="selectPaymentOption('full')">
+                                        <input type="radio" name="payment_option" value="full" class="d-none">
+                                        <div class="d-flex align-items-center">
+                                            <div class="payment-option-icon" style="background:rgba(26,135,84,0.1);">
+                                                <i class="fas fa-check-circle" style="color:var(--ka-primary);"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">Pay Full Amount</div>
+                                                <div class="text-muted" style="font-size:0.85rem;">100% - No balance due</div>
+                                                <div class="fw-bold text-success" id="fullPriceLabel">RM 0.00</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             @endif
 
                             <div class="mt-4">
@@ -392,6 +427,8 @@ $facilityMap = $facilities->keyBy('id');
 var allFacilities = @json($facilityList);
 var pricingRules = @json($pricingRules);
 var facilityData = @json($facilityMap);
+var depositPercentage = {{ $depositPercentage ?? 50 }};
+var onlinePaymentEnabled = {{ $onlinePaymentEnabled ? 'true' : 'false' }};
 
 // Quick search → fill booking form
 function jumpToBooking() {
@@ -625,6 +662,30 @@ function updatePrice() {
     }
 
     infoPrice.textContent = 'RM ' + price.toFixed(2);
+
+    if (onlinePaymentEnabled) {
+        var depositAmt = Math.round(price * depositPercentage) / 100;
+        var depositLabel = document.getElementById('depositPriceLabel');
+        var fullLabel = document.getElementById('fullPriceLabel');
+        if (depositLabel) depositLabel.textContent = 'RM ' + depositAmt.toFixed(2);
+        if (fullLabel) fullLabel.textContent = 'RM ' + price.toFixed(2);
+    }
+}
+
+function selectPaymentOption(option) {
+    var optDeposit = document.getElementById('optDeposit');
+    var optFull = document.getElementById('optFull');
+    if (!optDeposit || !optFull) return;
+
+    if (option === 'deposit') {
+        optDeposit.classList.add('active');
+        optFull.classList.remove('active');
+        optDeposit.querySelector('input[type=radio]').checked = true;
+    } else {
+        optFull.classList.add('active');
+        optDeposit.classList.remove('active');
+        optFull.querySelector('input[type=radio]').checked = true;
+    }
 }
 
 function formatTime12(time24) {
@@ -656,7 +717,22 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
 
     var paymentEl = form.querySelector('[name="payment_method"]');
     var paymentMethod = paymentEl ? paymentEl.value : 'cash';
-    var paymentLabel = paymentMethod === 'online' ? 'Pay Online (FPX/Card/eWallet)' : 'Pay at Venue';
+    var paymentOptionEl = form.querySelector('[name="payment_option"]:checked');
+    var paymentOption = paymentOptionEl ? paymentOptionEl.value : 'deposit';
+
+    var paymentLabel = 'Pay at Venue';
+    var chargeText = '';
+    if (paymentMethod === 'online') {
+        if (paymentOption === 'full') {
+            paymentLabel = 'Pay Full Online (FPX/Card/eWallet)';
+            chargeText = '<p><strong>Charge:</strong> ' + priceText + '</p>';
+        } else {
+            var depLabel = document.getElementById('depositPriceLabel');
+            var depAmt = depLabel ? depLabel.textContent : priceText;
+            paymentLabel = 'Pay Deposit Online (' + depositPercentage + '%)';
+            chargeText = '<p><strong>Deposit:</strong> ' + depAmt + ' <small class="text-muted">(Balance due at venue)</small></p>';
+        }
+    }
 
     Swal.fire({
         title: 'Confirm Booking',
@@ -665,7 +741,8 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
             '<p><strong>Facility:</strong> ' + facilityText + '</p>' +
             '<p><strong>Date:</strong> ' + dateText + '</p>' +
             '<p><strong>Time:</strong> ' + timeText + '</p>' +
-            '<p><strong>Price:</strong> ' + priceText + '</p>' +
+            '<p><strong>Total Price:</strong> ' + priceText + '</p>' +
+            chargeText +
             '<p><strong>Payment:</strong> ' + paymentLabel + '</p>' +
             '</div>',
         icon: 'question',

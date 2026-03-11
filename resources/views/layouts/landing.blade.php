@@ -114,6 +114,12 @@
     .tip-item:last-child { margin-bottom: 0; }
     .tip-item i { width: 20px; margin-right: 8px; }
 
+    /* PAYMENT OPTION CARDS */
+    .payment-option-card { background: #fff; border: 2px solid #e9ecef; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s ease; }
+    .payment-option-card:hover { border-color: #1a8754; }
+    .payment-option-card.active { border-color: #1a8754; background: rgba(26,135,84,0.04); box-shadow: 0 0 0 3px rgba(26,135,84,0.1); }
+    .payment-option-icon { width: 42px; height: 42px; min-width: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 1.1rem; }
+
     /* FEATURE CARDS */
     .feature-card { background: #fff; border-radius: 16px; padding: 35px 25px; text-align: center; transition: all 0.3s ease; box-shadow: 0 5px 25px rgba(0,0,0,0.06); height: 100%; border: 1px solid #f0f0f0; }
     .feature-card:hover { transform: translateY(-8px); box-shadow: 0 20px 50px rgba(0,0,0,0.12); border-color: transparent; }

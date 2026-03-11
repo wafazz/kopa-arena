@@ -31,8 +31,9 @@ class PublicController extends Controller
 
         $activeGateway = $this->getActiveGateway();
         $onlinePaymentEnabled = $activeGateway['gateway'] !== 'none';
+        $depositPercentage = (int) Setting::get('deposit_percentage', 50);
 
-        return view('landing', compact('branches', 'facilities', 'pricingRules', 'stats', 'onlinePaymentEnabled'));
+        return view('landing', compact('branches', 'facilities', 'pricingRules', 'stats', 'onlinePaymentEnabled', 'depositPercentage'));
     }
 
     public function bookedSlots(Request $request)
@@ -78,6 +79,7 @@ class PublicController extends Controller
             'customer_email' => 'nullable|email|max:255',
             'notes' => 'nullable|string',
             'payment_method' => 'nullable|in:cash,online',
+            'payment_option' => 'nullable|in:deposit,full',
         ]);
 
         $facility = Facility::with('slotTimeRule', 'pricings', 'branch')->findOrFail($request->facility_id);
@@ -133,6 +135,9 @@ class PublicController extends Controller
         $paymentMethod = $request->input('payment_method', 'cash');
         $activeGateway = $this->getActiveGateway();
         $isOnline = $paymentMethod === 'online' && $activeGateway['gateway'] !== 'none';
+        $paymentOption = $request->input('payment_option', 'deposit');
+        $depositPercentage = (int) Setting::get('deposit_percentage', 50);
+        $depositAmount = round($amount * $depositPercentage / 100, 2);
 
         // Team B joining match
         if ($request->match_parent_id) {
@@ -146,7 +151,7 @@ class PublicController extends Controller
 
             $booking = null;
             try {
-                DB::transaction(function () use ($request, $parent, $amount, &$booking) {
+                DB::transaction(function () use ($request, $parent, $amount, $depositAmount, &$booking) {
                     $booking = Booking::create([
                         'facility_id' => $parent->facility_id,
                         'user_id' => null,
@@ -159,6 +164,7 @@ class PublicController extends Controller
                         'payment_type' => 'cash',
                         'payment_status' => 'deposit',
                         'amount' => $amount,
+                        'deposit_amount' => $depositAmount,
                         'customer_name' => $request->customer_name,
                         'customer_phone' => $request->customer_phone,
                         'customer_email' => $request->customer_email,
@@ -171,7 +177,7 @@ class PublicController extends Controller
 
             if ($isOnline && $booking) {
                 $this->sendWhatsAppNotification($booking);
-                return $this->redirectToGateway($booking, $activeGateway);
+                return $this->redirectToGateway($booking, $activeGateway, $paymentOption);
             }
 
             if ($booking) {
@@ -187,7 +193,7 @@ class PublicController extends Controller
 
         $booking = null;
         try {
-            DB::transaction(function () use ($request, $endTime, $amount, &$booking) {
+            DB::transaction(function () use ($request, $endTime, $amount, $depositAmount, &$booking) {
                 $booking = Booking::create([
                     'facility_id' => $request->facility_id,
                     'user_id' => null,
@@ -199,6 +205,7 @@ class PublicController extends Controller
                     'payment_type' => 'cash',
                     'payment_status' => 'deposit',
                     'amount' => $amount,
+                    'deposit_amount' => $depositAmount,
                     'customer_name' => $request->customer_name,
                     'customer_phone' => $request->customer_phone,
                     'customer_email' => $request->customer_email,
@@ -211,7 +218,7 @@ class PublicController extends Controller
 
         if ($isOnline && $booking) {
             $this->sendWhatsAppNotification($booking);
-            return $this->redirectToGateway($booking, $activeGateway);
+            return $this->redirectToGateway($booking, $activeGateway, $paymentOption);
         }
 
         if ($booking) {
@@ -246,7 +253,8 @@ class PublicController extends Controller
             return redirect()->route('landing')->with('error', 'Invalid payment response.');
         }
 
-        $bookingId = str_replace('KOPA-', '', $orderId);
+        $isDeposit = str_ends_with($orderId, '-D');
+        $bookingId = preg_replace('/^KOPA-(\d+)-(D|F)$/', '$1', $orderId);
         $booking = Booking::find($bookingId);
 
         if (!$booking) {
@@ -255,12 +263,13 @@ class PublicController extends Controller
 
         if ($statusId == 1) {
             $booking->update([
-                'payment_status' => 'full_payment',
+                'payment_status' => $isDeposit ? 'deposit' : 'full_payment',
                 'payment_type' => 'online',
                 'paid_at' => now(),
                 'transaction_id' => $transactionId,
             ]);
-            return redirect()->route('landing')->with('success', 'Payment successful! Your booking has been confirmed.');
+            $msg = $isDeposit ? 'Deposit payment successful! Your booking will be reviewed shortly.' : 'Payment successful! Your booking has been confirmed.';
+            return redirect()->route('landing')->with('success', $msg);
         }
 
         if ($statusId == 2) {
@@ -288,7 +297,8 @@ class PublicController extends Controller
             return redirect()->route('landing')->with('error', 'Invalid payment response.');
         }
 
-        $bookingId = str_replace('KOPA-', '', $orderId);
+        $isDeposit = str_ends_with($orderId, '-D');
+        $bookingId = preg_replace('/^KOPA-(\d+)-(D|F)$/', '$1', $orderId);
         $booking = Booking::find($bookingId);
 
         if (!$booking) {
@@ -297,12 +307,13 @@ class PublicController extends Controller
 
         if ($statusId == 1) {
             $booking->update([
-                'payment_status' => 'full_payment',
+                'payment_status' => $isDeposit ? 'deposit' : 'full_payment',
                 'payment_type' => 'online',
                 'paid_at' => now(),
                 'transaction_id' => $billcode,
             ]);
-            return redirect()->route('landing')->with('success', 'Payment successful! Your booking has been confirmed.');
+            $successMsg = $isDeposit ? 'Deposit payment successful! Your booking will be reviewed shortly.' : 'Payment successful! Your booking has been confirmed.';
+            return redirect()->route('landing')->with('success', $successMsg);
         }
 
         if ($statusId == 3) {
@@ -337,7 +348,8 @@ class PublicController extends Controller
             return response('FAIL', 400);
         }
 
-        $bookingId = str_replace('KOPA-', '', $orderId);
+        $isDeposit = str_ends_with($orderId, '-D');
+        $bookingId = preg_replace('/^KOPA-(\d+)-(D|F)$/', '$1', $orderId);
         $booking = Booking::find($bookingId);
 
         if (!$booking) {
@@ -346,7 +358,7 @@ class PublicController extends Controller
 
         if ($statusId == 1) {
             $booking->update([
-                'payment_status' => 'full_payment',
+                'payment_status' => $isDeposit ? 'deposit' : 'full_payment',
                 'payment_type' => 'online',
                 'paid_at' => now(),
                 'transaction_id' => $transactionId,
@@ -374,7 +386,8 @@ class PublicController extends Controller
             return response('FAIL', 400);
         }
 
-        $bookingId = str_replace('KOPA-', '', $orderId);
+        $isDeposit = str_ends_with($orderId, '-D');
+        $bookingId = preg_replace('/^KOPA-(\d+)-(D|F)$/', '$1', $orderId);
         $booking = Booking::find($bookingId);
 
         if (!$booking) {
@@ -383,7 +396,7 @@ class PublicController extends Controller
 
         if ($statusId == 1) {
             $booking->update([
-                'payment_status' => 'full_payment',
+                'payment_status' => $isDeposit ? 'deposit' : 'full_payment',
                 'payment_type' => 'online',
                 'paid_at' => now(),
                 'transaction_id' => $billcode,
@@ -503,6 +516,11 @@ class PublicController extends Controller
         $time = \Carbon\Carbon::parse($booking->start_time)->format('g:i A') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('g:i A');
         $amount = 'RM ' . number_format($booking->amount, 2);
         $type = ucfirst($booking->booking_type);
+        $depositInfo = '';
+        if ($booking->deposit_amount && $booking->deposit_amount < $booking->amount) {
+            $depositInfo = "Deposit: RM " . number_format($booking->deposit_amount, 2) . "\n"
+                . "Balance: RM " . number_format($booking->amount - $booking->deposit_amount, 2) . "\n";
+        }
 
         $message = "*KOPA ARENA - Booking Confirmation*\n\n"
             . "Hi *{$booking->customer_name}*,\n"
@@ -514,7 +532,8 @@ class PublicController extends Controller
             . "Date: {$date}\n"
             . "Time: {$time}\n"
             . "Type: {$type}\n"
-            . "Amount: {$amount}\n\n"
+            . "Amount: {$amount}\n"
+            . $depositInfo . "\n"
             . "Status: _Pending Approval_\n\n"
             . "View your booking details:\n{$detailsUrl}\n\n"
             . "Thank you for choosing Kopa Arena!";
@@ -565,20 +584,22 @@ class PublicController extends Controller
         ];
     }
 
-    private function redirectToGateway($booking, $activeGateway)
+    private function redirectToGateway($booking, $activeGateway, $paymentOption = 'deposit')
     {
+        $chargeAmount = $paymentOption === 'full' ? $booking->amount : $booking->deposit_amount;
+        $orderId = 'KOPA-' . $booking->id . ($paymentOption === 'deposit' ? '-D' : '-F');
+
         if ($activeGateway['gateway'] === 'toyyibpay') {
-            return $this->redirectToToyyibPay($booking, $activeGateway['config']);
+            return $this->redirectToToyyibPay($booking, $activeGateway['config'], $chargeAmount, $orderId);
         }
-        return $this->redirectToSenangPay($booking, $activeGateway['config']);
+        return $this->redirectToSenangPay($booking, $activeGateway['config'], $chargeAmount, $orderId);
     }
 
-    private function redirectToSenangPay($booking, $config)
+    private function redirectToSenangPay($booking, $config, $chargeAmount, $orderId)
     {
-        $orderId = 'KOPA-' . $booking->id;
         $facility = $booking->facility;
         $detail = 'Booking_' . $facility->name . '_' . $booking->booking_date->format('Y-m-d');
-        $amount = number_format($booking->amount, 2, '.', '');
+        $amount = number_format($chargeAmount, 2, '.', '');
 
         $hash = hash_hmac('SHA256', $config['secret_key'] . $detail . $amount . $orderId, $config['secret_key']);
 
@@ -596,12 +617,11 @@ class PublicController extends Controller
         return redirect($url . '?' . $params);
     }
 
-    private function redirectToToyyibPay($booking, $config)
+    private function redirectToToyyibPay($booking, $config, $chargeAmount, $orderId)
     {
-        $orderId = 'KOPA-' . $booking->id;
         $facility = $booking->facility;
         $detail = 'Booking ' . $facility->name . ' ' . $booking->booking_date->format('Y-m-d');
-        $amount = intval(round($booking->amount * 100)); // cents
+        $amount = intval(round($chargeAmount * 100)); // cents
 
         $phone = preg_replace('/[^0-9]/', '', $booking->customer_phone);
 

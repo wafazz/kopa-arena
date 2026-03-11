@@ -73,6 +73,9 @@
                                 <div class="col-sm-6 mb-3">
                                     <small class="text-muted d-block">Amount</small>
                                     <strong class="text-success" style="font-size:1.1rem;">RM {{ number_format($booking->amount, 2) }}</strong>
+                                    @if($booking->deposit_amount && $booking->deposit_amount < $booking->amount)
+                                        <br><small class="text-muted">Deposit: RM {{ number_format($booking->deposit_amount, 2) }} | Balance: RM {{ number_format($booking->amount - $booking->deposit_amount, 2) }}</small>
+                                    @endif
                                 </div>
                             </div>
                         </div>

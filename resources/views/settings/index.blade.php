@@ -109,6 +109,20 @@
                             </select>
                         </div>
                     </div>
+                    <hr>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Deposit Percentage (%)</label>
+                            <p class="text-muted" style="font-size:0.85rem;">Set the deposit percentage for online bookings. Customers can choose to pay deposit or full amount.</p>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="number" name="deposit_percentage" class="form-control" value="{{ Setting::get('deposit_percentage', 50) }}" min="1" max="100" placeholder="50">
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <small class="text-muted">e.g. 50 = customer pays 50% as deposit, remaining at venue</small>
+                        </div>
+                    </div>
                     <div class="mt-3">
                         <button type="submit" class="au-btn au-btn-icon au-btn--green">
                             <i class="zmdi zmdi-check"></i>save gateway setting</button>
@@ -124,6 +138,7 @@
                 <ul class="list-unstyled mb-0" style="font-size:13px;">
                     <li class="mb-2"><i class="zmdi zmdi-check text-success me-2"></i>Only <strong>one gateway</strong> can be active at a time</li>
                     <li class="mb-2"><i class="zmdi zmdi-check text-success me-2"></i>Set to <strong>None</strong> for cash-only mode</li>
+                    <li class="mb-2"><i class="zmdi zmdi-check text-success me-2"></i>Deposit % applies to online bookings</li>
                     <li class="mb-2"><i class="zmdi zmdi-alert-circle text-warning me-2"></i>Configure credentials below before activating</li>
                     <li><i class="zmdi zmdi-alert-circle text-warning me-2"></i>Both gateways share the same return/callback URLs</li>
                 </ul>

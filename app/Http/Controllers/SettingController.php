@@ -52,6 +52,7 @@ class SettingController extends Controller
         // Payment gateway + OnSend text fields
         $textFields = [
             'payment_gateway',
+            'deposit_percentage',
             'senangpay_mode',
             'senangpay_sandbox_merchant_id',
             'senangpay_sandbox_secret_key',
