@@ -234,15 +234,15 @@
                     <h5>Contact Us</h5>
                     <div class="footer-contact-item">
                         <i class="fas fa-envelope"></i>
-                        <span>info@kopaarena.com</span>
+                        <span>{{ \App\Models\Setting::get('contact_email', 'info@kopaarena.com') }}</span>
                     </div>
                     <div class="footer-contact-item">
                         <i class="fas fa-phone"></i>
-                        <span>+60 12-345 6789</span>
+                        <span>{{ \App\Models\Setting::get('contact_phone', '+60 12-345 6789') }}</span>
                     </div>
                     <div class="footer-contact-item">
                         <i class="fas fa-clock"></i>
-                        <span>Daily: 8:00 AM - 11:00 PM</span>
+                        <span>{{ \App\Models\Setting::get('contact_hours', 'Daily: 8:00 AM - 11:00 PM') }}</span>
                     </div>
                 </div>
             </div>

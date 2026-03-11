@@ -65,6 +65,9 @@ class SettingController extends Controller
             'toyyibpay_production_secret_key',
             'toyyibpay_production_category_code',
             'onsend_api_token',
+            'contact_email',
+            'contact_phone',
+            'contact_hours',
         ];
         foreach ($textFields as $key) {
             if ($request->has($key)) {

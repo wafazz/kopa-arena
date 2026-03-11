@@ -392,6 +392,63 @@
         </div>
     </div>
 </div>
+<!-- CONTACT US SETTINGS -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="au-card m-b-30">
+            <div class="au-card-inner">
+                <h3 class="title-2 m-b-25"><i class="zmdi zmdi-phone"></i> Contact Us (Footer)</h3>
+                <form action="{{ route('settings.update') }}" method="POST">
+                    @csrf
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Email</label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="email" name="contact_email" class="form-control" value="{{ Setting::get('contact_email', 'info@kopaarena.com') }}" placeholder="info@kopaarena.com">
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Phone</label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" name="contact_phone" class="form-control" value="{{ Setting::get('contact_phone', '+60 12-345 6789') }}" placeholder="+60 12-345 6789">
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Operating Hours</label>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" name="contact_hours" class="form-control" value="{{ Setting::get('contact_hours', 'Daily: 8:00 AM - 11:00 PM') }}" placeholder="Daily: 8:00 AM - 11:00 PM">
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit" class="au-btn au-btn-icon au-btn--green">
+                            <i class="zmdi zmdi-check"></i>save contact settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="au-card m-b-30">
+            <div class="au-card-inner">
+                <h3 class="title-2 m-b-25"><i class="zmdi zmdi-info-outline"></i> Contact Info</h3>
+                <ul class="list-unstyled mb-0" style="font-size:13px;">
+                    <li class="mb-2"><i class="zmdi zmdi-check text-success me-2"></i>Shown in the landing page footer</li>
+                    <li class="mb-2"><i class="zmdi zmdi-check text-success me-2"></i>Email, phone, and operating hours</li>
+                    <li><i class="zmdi zmdi-alert-circle text-warning me-2"></i>Leave defaults if not changed</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
