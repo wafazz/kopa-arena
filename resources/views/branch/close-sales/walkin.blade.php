@@ -49,11 +49,15 @@
                     <hr class="my-4">
                     <h3 class="title-2 m-b-25"><i class="zmdi zmdi-account"></i> Customer</h3>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label fw-bold">Customer Name <span class="text-danger">*</span></label>
                             <input type="text" name="customer_name" class="form-control" value="{{ old('customer_name') }}" required>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-bold">Team Name</label>
+                            <input type="text" name="team_name" class="form-control" value="{{ old('team_name') }}" placeholder="Optional">
+                        </div>
+                        <div class="col-md-4 mb-3">
                             <label class="form-label fw-bold">Phone</label>
                             <input type="text" name="customer_phone" class="form-control" value="{{ old('customer_phone') }}">
                         </div>

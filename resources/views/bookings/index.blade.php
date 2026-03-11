@@ -271,9 +271,12 @@
                         <td>{{ $booking->id }}</td>
                         <td>
                             <strong>{{ $booking->customer_name }}</strong>
+                            @if($booking->team_name)
+                                <br><small class="text-primary"><i class="zmdi zmdi-accounts"></i> {{ $booking->team_name }}</small>
+                            @endif
                             @if($booking->booking_type === 'match')
                                 @if($opponent)
-                                    <br><small class="text-info">vs {{ $opponent->customer_name }}</small>
+                                    <br><small class="text-info">vs {{ $opponent->team_name ?? $opponent->customer_name }}</small>
                                 @else
                                     <br><small class="text-warning">Waiting for opponent</small>
                                 @endif

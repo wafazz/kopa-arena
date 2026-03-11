@@ -14,7 +14,7 @@ class Booking extends Model
         'facility_id', 'user_id', 'booking_date', 'start_time', 'end_time',
         'status', 'booking_type', 'match_parent_id', 'payment_type', 'payment_status',
         'paid_at', 'transaction_id', 'checkin_token', 'checked_in_at', 'checked_in_by',
-        'reminders_sent', 'amount', 'deposit_amount', 'customer_name', 'customer_phone', 'customer_email', 'notes',
+        'reminders_sent', 'amount', 'deposit_amount', 'customer_name', 'team_name', 'customer_phone', 'customer_email', 'notes',
     ];
 
     protected $casts = [

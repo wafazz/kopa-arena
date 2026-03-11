@@ -364,6 +364,9 @@
                         <td>{{ $booking->id }}</td>
                         <td>
                             <strong>{{ $booking->customer_name }}</strong>
+                            @if($booking->team_name)
+                                <br><small class="text-primary"><i class="zmdi zmdi-accounts"></i> {{ $booking->team_name }}</small>
+                            @endif
                             @if($booking->customer_phone)
                             <br><small class="text-muted">{{ $booking->customer_phone }}</small>
                             @endif
@@ -417,6 +420,9 @@
                         <td>{{ $booking->id }}</td>
                         <td>
                             <strong>{{ $booking->customer_name }}</strong>
+                            @if($booking->team_name)
+                                <br><small class="text-primary"><i class="zmdi zmdi-accounts"></i> {{ $booking->team_name }}</small>
+                            @endif
                             @if($booking->customer_phone)
                             <br><small class="text-muted">{{ $booking->customer_phone }}</small>
                             @endif

@@ -75,15 +75,19 @@
                     <hr>
                     <h3 class="title-2 m-b-25"><i class="zmdi zmdi-account"></i> Customer Details</h3>
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Customer Name <span class="text-danger">*</span></label>
                             <input type="text" name="customer_name" class="form-control" value="{{ old('customer_name', $booking->customer_name) }}" required>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Team Name</label>
+                            <input type="text" name="team_name" class="form-control" value="{{ old('team_name', $booking->team_name) }}" placeholder="Optional">
+                        </div>
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Phone</label>
                             <input type="text" name="customer_phone" class="form-control" value="{{ old('customer_phone', $booking->customer_phone) }}">
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Email</label>
                             <input type="email" name="customer_email" class="form-control" value="{{ old('customer_email', $booking->customer_email) }}">
                         </div>

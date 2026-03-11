@@ -184,9 +184,13 @@
                             <h5 class="fw-bold mb-3"><i class="fas fa-user me-2 text-muted"></i> Your Details</h5>
 
                             <div class="row g-3">
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label class="form-label">Full Name <span class="text-danger">*</span></label>
                                     <input type="text" name="customer_name" class="form-control" value="{{ old('customer_name') }}" placeholder="Your name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Team Name <small class="text-muted">(Optional)</small></label>
+                                    <input type="text" name="team_name" class="form-control" value="{{ old('team_name') }}" placeholder="e.g. Warriors FC">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Phone Number <span class="text-danger">*</span></label>

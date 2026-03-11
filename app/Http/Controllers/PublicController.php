@@ -46,8 +46,8 @@ class PublicController extends Controller
         $bookings = Booking::where('facility_id', $request->facility_id)
             ->where('booking_date', $request->booking_date)
             ->whereNotIn('status', ['rejected', 'cancelled'])
-            ->select('id', 'start_time', 'end_time', 'booking_type', 'match_parent_id', 'customer_name')
-            ->with('matchOpponent:id,match_parent_id,customer_name')
+            ->select('id', 'start_time', 'end_time', 'booking_type', 'match_parent_id', 'customer_name', 'team_name')
+            ->with('matchOpponent:id,match_parent_id,customer_name,team_name')
             ->get()
             ->map(function ($b) {
                 $hasOpponent = $b->matchOpponent !== null;
@@ -58,7 +58,7 @@ class PublicController extends Controller
                     'type' => $b->booking_type,
                     'status' => $isMatchOpen ? 'match_open' : 'booked',
                     'match_id' => $b->match_parent_id === null ? $b->id : $b->match_parent_id,
-                    'team_a_name' => $b->match_parent_id === null ? $b->customer_name : null,
+                    'team_a_name' => $b->match_parent_id === null ? ($b->team_name ?? $b->customer_name) : null,
                     'is_child' => $b->match_parent_id !== null,
                 ];
             });
@@ -75,6 +75,7 @@ class PublicController extends Controller
             'booking_type' => 'required|in:normal,match',
             'match_parent_id' => 'nullable|exists:bookings,id',
             'customer_name' => 'required|string|max:255',
+            'team_name' => 'nullable|string|max:255',
             'customer_phone' => 'required|string|max:20',
             'customer_email' => 'nullable|email|max:255',
             'notes' => 'nullable|string',
@@ -166,6 +167,7 @@ class PublicController extends Controller
                         'amount' => $amount,
                         'deposit_amount' => $depositAmount,
                         'customer_name' => $request->customer_name,
+                        'team_name' => $request->team_name,
                         'customer_phone' => $request->customer_phone,
                         'customer_email' => $request->customer_email,
                         'notes' => $request->notes,
@@ -207,6 +209,7 @@ class PublicController extends Controller
                     'amount' => $amount,
                     'deposit_amount' => $depositAmount,
                     'customer_name' => $request->customer_name,
+                    'team_name' => $request->team_name,
                     'customer_phone' => $request->customer_phone,
                     'customer_email' => $request->customer_email,
                     'notes' => $request->notes,
@@ -516,6 +519,7 @@ class PublicController extends Controller
         $time = \Carbon\Carbon::parse($booking->start_time)->format('g:i A') . ' - ' . \Carbon\Carbon::parse($booking->end_time)->format('g:i A');
         $amount = 'RM ' . number_format($booking->amount, 2);
         $type = ucfirst($booking->booking_type);
+        $teamInfo = $booking->team_name ? "Team: {$booking->team_name}\n" : '';
         $depositInfo = '';
         if ($booking->deposit_amount && $booking->deposit_amount < $booking->amount) {
             $depositInfo = "Deposit: RM " . number_format($booking->deposit_amount, 2) . "\n"
@@ -532,6 +536,7 @@ class PublicController extends Controller
             . "Date: {$date}\n"
             . "Time: {$time}\n"
             . "Type: {$type}\n"
+            . $teamInfo
             . "Amount: {$amount}\n"
             . $depositInfo . "\n"
             . "Status: _Pending Approval_\n\n"

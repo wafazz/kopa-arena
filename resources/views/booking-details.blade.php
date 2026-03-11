@@ -31,6 +31,12 @@
                                     <small class="text-muted d-block">Name</small>
                                     <strong>{{ $booking->customer_name }}</strong>
                                 </div>
+                                @if($booking->team_name)
+                                <div class="col-sm-6 mb-2">
+                                    <small class="text-muted d-block">Team Name</small>
+                                    <strong>{{ $booking->team_name }}</strong>
+                                </div>
+                                @endif
                                 <div class="col-sm-6 mb-2">
                                     <small class="text-muted d-block">Phone</small>
                                     <strong>{{ $booking->customer_phone }}</strong>

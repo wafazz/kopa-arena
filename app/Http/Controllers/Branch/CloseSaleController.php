@@ -197,6 +197,7 @@ class CloseSaleController extends Controller
             'booking_date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
             'customer_name' => 'required|string|max:255',
+            'team_name' => 'nullable|string|max:255',
             'customer_phone' => 'nullable|string|max:20',
             'payment_type' => 'required|in:cash,online,bank_transfer',
         ]);
@@ -269,6 +270,7 @@ class CloseSaleController extends Controller
                     'paid_at' => now(),
                     'amount' => $amount,
                     'customer_name' => $request->customer_name,
+                    'team_name' => $request->team_name,
                     'customer_phone' => $request->customer_phone,
                     'notes' => $request->notes,
                 ]);
