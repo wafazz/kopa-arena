@@ -64,6 +64,20 @@
                     </div>
 
                     <hr class="my-4">
+                    <h3 class="title-2 m-b-25"><i class="zmdi zmdi-plus-circle"></i> Add-On</h3>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="form-check">
+                                <input type="hidden" name="include_referee" value="0">
+                                <input type="checkbox" name="include_referee" value="1" class="form-check-input" id="include_referee" {{ old('include_referee') ? 'checked' : '' }} onchange="updatePrice()">
+                                <label class="form-check-label fw-bold" for="include_referee">
+                                    Include Referee <span class="text-muted fw-normal" id="referee_price_label"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
                     <h3 class="title-2 m-b-25"><i class="zmdi zmdi-money"></i> Payment</h3>
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -168,6 +182,7 @@
 @push('scripts')
 <script>
 var pricingRules = @json($pricingRules);
+var refereeBasePrice = {{ \App\Models\Setting::get('referee_price', 0) }};
 
 document.getElementById('facility_id').addEventListener('change', buildTimeSlots);
 document.querySelector('input[name="booking_date"]').addEventListener('change', buildTimeSlots);
@@ -314,6 +329,12 @@ function updatePrice() {
             }
         }
     }
+
+    var refLabel = document.getElementById('referee_price_label');
+    var refCheck = document.getElementById('include_referee');
+    var refPrice = refereeBasePrice;
+    if (refLabel) refLabel.textContent = '(+ RM ' + refPrice.toFixed(2) + ')';
+    if (refCheck && refCheck.checked) price += refPrice;
 
     var formatted = 'RM ' + price.toFixed(2);
     priceField.value = formatted;

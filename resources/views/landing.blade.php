@@ -206,6 +206,16 @@
                                 </div>
                             </div>
 
+                            <hr class="section-divider">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-plus-circle me-2 text-muted"></i> Add-On</h5>
+                            <div class="form-check mb-2">
+                                <input type="hidden" name="include_referee" value="0">
+                                <input type="checkbox" name="include_referee" value="1" class="form-check-input" id="include_referee" {{ old('include_referee') ? 'checked' : '' }} onchange="updatePrice()">
+                                <label class="form-check-label fw-bold" for="include_referee">
+                                    Include Referee <span class="text-muted fw-normal" id="referee_price_label"></span>
+                                </label>
+                            </div>
+
                             @if($onlinePaymentEnabled)
                             <input type="hidden" name="payment_method" value="online">
 
@@ -433,6 +443,7 @@ var pricingRules = @json($pricingRules);
 var facilityData = @json($facilityMap);
 var depositPercentage = {{ $depositPercentage ?? 50 }};
 var onlinePaymentEnabled = {{ $onlinePaymentEnabled ? 'true' : 'false' }};
+var refereeBasePrice = {{ $refereePrice ?? 0 }};
 
 // Quick search → fill booking form
 function jumpToBooking() {
@@ -664,6 +675,13 @@ function updatePrice() {
     if (bookingType === 'match') {
         price = price / 2;
     }
+
+    var refLabel = document.getElementById('referee_price_label');
+    var refCheck = document.getElementById('include_referee');
+    var refPrice = refereeBasePrice;
+    if (bookingType === 'match') refPrice = refPrice / 2;
+    if (refLabel) refLabel.textContent = '(+ RM ' + refPrice.toFixed(2) + ')';
+    if (refCheck && refCheck.checked) price += refPrice;
 
     infoPrice.textContent = 'RM ' + price.toFixed(2);
 

@@ -32,8 +32,9 @@ class PublicController extends Controller
         $activeGateway = $this->getActiveGateway();
         $onlinePaymentEnabled = $activeGateway['gateway'] !== 'none';
         $depositPercentage = (int) Setting::get('deposit_percentage', 50);
+        $refereePrice = (float) Setting::get('referee_price', 0);
 
-        return view('landing', compact('branches', 'facilities', 'pricingRules', 'stats', 'onlinePaymentEnabled', 'depositPercentage'));
+        return view('landing', compact('branches', 'facilities', 'pricingRules', 'stats', 'onlinePaymentEnabled', 'depositPercentage', 'refereePrice'));
     }
 
     public function bookedSlots(Request $request)
@@ -81,6 +82,7 @@ class PublicController extends Controller
             'notes' => 'nullable|string',
             'payment_method' => 'nullable|in:cash,online',
             'payment_option' => 'nullable|in:deposit,full',
+            'include_referee' => 'nullable|boolean',
         ]);
 
         $facility = Facility::with('slotTimeRule', 'pricings', 'branch')->findOrFail($request->facility_id);
@@ -133,6 +135,16 @@ class PublicController extends Controller
             $amount = $amount / 2;
         }
 
+        $includeReferee = (bool) $request->input('include_referee', false);
+        $refereePrice = 0;
+        if ($includeReferee) {
+            $refereePrice = (float) Setting::get('referee_price', 0);
+            if ($request->booking_type === 'match') {
+                $refereePrice = $refereePrice / 2;
+            }
+            $amount += $refereePrice;
+        }
+
         $paymentMethod = $request->input('payment_method', 'cash');
         $activeGateway = $this->getActiveGateway();
         $isOnline = $paymentMethod === 'online' && $activeGateway['gateway'] !== 'none';
@@ -152,7 +164,7 @@ class PublicController extends Controller
 
             $booking = null;
             try {
-                DB::transaction(function () use ($request, $parent, $amount, $depositAmount, &$booking) {
+                DB::transaction(function () use ($request, $parent, $amount, $depositAmount, $includeReferee, $refereePrice, &$booking) {
                     $booking = Booking::create([
                         'facility_id' => $parent->facility_id,
                         'user_id' => null,
@@ -171,6 +183,8 @@ class PublicController extends Controller
                         'customer_phone' => $request->customer_phone,
                         'customer_email' => $request->customer_email,
                         'notes' => $request->notes,
+                        'include_referee' => $includeReferee,
+                        'referee_price' => $includeReferee ? $refereePrice : null,
                     ]);
                 });
             } catch (\Illuminate\Database\QueryException $e) {
@@ -195,7 +209,7 @@ class PublicController extends Controller
 
         $booking = null;
         try {
-            DB::transaction(function () use ($request, $endTime, $amount, $depositAmount, &$booking) {
+            DB::transaction(function () use ($request, $endTime, $amount, $depositAmount, $includeReferee, $refereePrice, &$booking) {
                 $booking = Booking::create([
                     'facility_id' => $request->facility_id,
                     'user_id' => null,
@@ -213,6 +227,8 @@ class PublicController extends Controller
                     'customer_phone' => $request->customer_phone,
                     'customer_email' => $request->customer_email,
                     'notes' => $request->notes,
+                    'include_referee' => $includeReferee,
+                    'referee_price' => $includeReferee ? $refereePrice : null,
                 ]);
             });
         } catch (\Illuminate\Database\QueryException $e) {
@@ -520,6 +536,10 @@ class PublicController extends Controller
         $amount = 'RM ' . number_format($booking->amount, 2);
         $type = ucfirst($booking->booking_type);
         $teamInfo = $booking->team_name ? "Team: {$booking->team_name}\n" : '';
+        $refereeInfo = '';
+        if ($booking->include_referee && $booking->referee_price) {
+            $refereeInfo = "Referee: RM " . number_format($booking->referee_price, 2) . " (included)\n";
+        }
         $depositInfo = '';
         if ($booking->deposit_amount && $booking->deposit_amount < $booking->amount) {
             $depositInfo = "Deposit: RM " . number_format($booking->deposit_amount, 2) . "\n"
@@ -538,6 +558,7 @@ class PublicController extends Controller
             . "Type: {$type}\n"
             . $teamInfo
             . "Amount: {$amount}\n"
+            . $refereeInfo
             . $depositInfo . "\n"
             . "Status: _Pending Approval_\n\n"
             . "View your booking details:\n{$detailsUrl}\n\n"

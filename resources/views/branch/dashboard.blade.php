@@ -381,7 +381,12 @@
                         <td>{{ $booking->facility->name ?? '-' }}</td>
                         <td>{{ $booking->booking_date->format('d M Y') }}</td>
                         <td>{{ \Carbon\Carbon::parse($booking->start_time)->format('h:i A') }}</td>
-                        <td class="text-end">RM {{ number_format($booking->amount, 2) }}</td>
+                        <td class="text-end">
+                            RM {{ number_format($booking->amount, 2) }}
+                            @if($booking->include_referee)
+                                <br><small class="text-info"><i class="fas fa-whistle"></i> Ref</small>
+                            @endif
+                        </td>
                         <td>
                             <span class="badge bg-{{ ($booking->payment_status ?? 'full_payment') === 'full_payment' ? 'success' : 'warning' }}">
                                 {{ ($booking->payment_status ?? 'full_payment') === 'full_payment' ? 'Full Payment' : 'Deposit' }}
@@ -437,7 +442,12 @@
                         <td>{{ $booking->facility->name ?? '-' }}</td>
                         <td>{{ $booking->booking_date->format('d M Y') }}</td>
                         <td>{{ \Carbon\Carbon::parse($booking->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('h:i A') }}</td>
-                        <td class="text-end">RM {{ number_format($booking->amount, 2) }}</td>
+                        <td class="text-end">
+                            RM {{ number_format($booking->amount, 2) }}
+                            @if($booking->include_referee)
+                                <br><small class="text-info"><i class="fas fa-whistle"></i> Ref</small>
+                            @endif
+                        </td>
                         <td>
                             <span class="badge bg-{{ ($booking->payment_status ?? 'full_payment') === 'full_payment' ? 'success' : 'warning' }}">
                                 {{ ($booking->payment_status ?? 'full_payment') === 'full_payment' ? 'Full Payment' : 'Deposit' }}

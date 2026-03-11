@@ -53,6 +53,7 @@ class SettingController extends Controller
         $textFields = [
             'payment_gateway',
             'deposit_percentage',
+            'referee_price',
             'senangpay_mode',
             'senangpay_sandbox_merchant_id',
             'senangpay_sandbox_secret_key',

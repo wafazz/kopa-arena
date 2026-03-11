@@ -15,6 +15,7 @@ class Booking extends Model
         'status', 'booking_type', 'match_parent_id', 'payment_type', 'payment_status',
         'paid_at', 'transaction_id', 'checkin_token', 'checked_in_at', 'checked_in_by',
         'reminders_sent', 'amount', 'deposit_amount', 'customer_name', 'team_name', 'customer_phone', 'customer_email', 'notes',
+        'include_referee', 'referee_price',
     ];
 
     protected $casts = [
@@ -22,6 +23,7 @@ class Booking extends Model
         'paid_at' => 'datetime',
         'checked_in_at' => 'datetime',
         'amount' => 'decimal:2',
+        'include_referee' => 'boolean',
         'reminders_sent' => 'array',
     ];
 

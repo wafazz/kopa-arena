@@ -225,6 +225,9 @@
                         <td>{{ \Carbon\Carbon::parse($booking->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($booking->end_time)->format('h:i A') }}</td>
                         <td class="text-end">
                             RM {{ number_format($booking->amount, 2) }}
+                            @if($booking->include_referee)
+                                <br><small class="text-info"><i class="fas fa-whistle"></i> Referee +RM {{ number_format($booking->referee_price, 2) }}</small>
+                            @endif
                             @if($opponent)
                                 <br><small class="text-muted">+ RM {{ number_format($opponent->amount, 2) }}</small>
                             @endif

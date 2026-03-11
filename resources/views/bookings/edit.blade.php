@@ -94,6 +94,23 @@
                     </div>
 
                     <hr>
+                    <h3 class="title-2 m-b-25"><i class="zmdi zmdi-plus-circle"></i> Add-On</h3>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="form-check">
+                                <input type="hidden" name="include_referee" value="0">
+                                <input type="checkbox" name="include_referee" value="1" class="form-check-input" id="include_referee" {{ old('include_referee', $booking->include_referee) ? 'checked' : '' }}>
+                                <label class="form-check-label fw-bold" for="include_referee">
+                                    Include Referee
+                                    @if($booking->referee_price)
+                                        <span class="text-muted fw-normal">(RM {{ number_format($booking->referee_price, 2) }})</span>
+                                    @endif
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
                     <h3 class="title-2 m-b-25"><i class="zmdi zmdi-money"></i> Payment</h3>
                     <div class="row">
                         <div class="col-md-4 mb-3">

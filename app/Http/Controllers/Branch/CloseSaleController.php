@@ -9,6 +9,7 @@ use App\Models\CloseSale;
 use App\Models\Facility;
 use App\Models\Order;
 use App\Models\PricingRule;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -200,6 +201,7 @@ class CloseSaleController extends Controller
             'team_name' => 'nullable|string|max:255',
             'customer_phone' => 'nullable|string|max:20',
             'payment_type' => 'required|in:cash,online,bank_transfer',
+            'include_referee' => 'nullable|boolean',
         ]);
 
         $facility = Facility::with('slotTimeRule', 'pricings', 'branch')->findOrFail($request->facility_id);
@@ -251,12 +253,19 @@ class CloseSaleController extends Controller
             }
         }
 
+        $includeReferee = (bool) $request->input('include_referee', false);
+        $refereePrice = 0;
+        if ($includeReferee) {
+            $refereePrice = (float) Setting::get('referee_price', 0);
+            $amount += $refereePrice;
+        }
+
         if (!Booking::isSlotAvailable($request->facility_id, $request->booking_date, $request->start_time, $endTime->format('H:i'))) {
             return back()->withInput()->with('error', 'This slot overlaps with an existing booking.');
         }
 
         try {
-            $walkin = DB::transaction(function () use ($request, $facility, $endTime, $amount) {
+            $walkin = DB::transaction(function () use ($request, $facility, $endTime, $amount, $includeReferee, $refereePrice) {
                 return Booking::create([
                     'facility_id' => $facility->id,
                     'user_id' => Auth::id(),
@@ -273,6 +282,8 @@ class CloseSaleController extends Controller
                     'team_name' => $request->team_name,
                     'customer_phone' => $request->customer_phone,
                     'notes' => $request->notes,
+                    'include_referee' => $includeReferee,
+                    'referee_price' => $includeReferee ? $refereePrice : null,
                 ]);
             });
         } catch (\Illuminate\Database\QueryException $e) {

@@ -57,6 +57,7 @@ class BookingController extends Controller
             'payment_type' => 'required|in:cash,online,bank_transfer',
             'payment_status' => 'required|in:full_payment,deposit',
             'notes' => 'nullable|string',
+            'include_referee' => 'nullable|boolean',
         ]);
 
         $facility = Facility::with('slotTimeRule', 'pricings', 'branch')->findOrFail($request->facility_id);
@@ -111,6 +112,16 @@ class BookingController extends Controller
             $amount = $amount / 2;
         }
 
+        $includeReferee = (bool) $request->input('include_referee', false);
+        $refereePrice = 0;
+        if ($includeReferee) {
+            $refereePrice = (float) \App\Models\Setting::get('referee_price', 0);
+            if ($request->booking_type === 'match') {
+                $refereePrice = $refereePrice / 2;
+            }
+            $amount += $refereePrice;
+        }
+
         // Team B joining an existing match
         if ($request->match_parent_id) {
             $parent = Booking::findOrFail($request->match_parent_id);
@@ -122,7 +133,7 @@ class BookingController extends Controller
             }
 
             try {
-                $booking = DB::transaction(function () use ($request, $parent, $amount) {
+                $booking = DB::transaction(function () use ($request, $parent, $amount, $includeReferee, $refereePrice) {
                     return Booking::create([
                         'facility_id' => $parent->facility_id,
                         'user_id' => Auth::id(),
@@ -140,6 +151,8 @@ class BookingController extends Controller
                         'customer_phone' => $request->customer_phone,
                         'customer_email' => $request->customer_email,
                         'notes' => $request->notes,
+                        'include_referee' => $includeReferee,
+                        'referee_price' => $includeReferee ? $refereePrice : null,
                     ]);
                 });
             } catch (\Illuminate\Database\QueryException $e) {
@@ -156,7 +169,7 @@ class BookingController extends Controller
         }
 
         try {
-            $booking = DB::transaction(function () use ($request, $endTime, $amount) {
+            $booking = DB::transaction(function () use ($request, $endTime, $amount, $includeReferee, $refereePrice) {
                 return Booking::create([
                     'facility_id' => $request->facility_id,
                     'user_id' => Auth::id(),
@@ -173,6 +186,8 @@ class BookingController extends Controller
                     'customer_phone' => $request->customer_phone,
                     'customer_email' => $request->customer_email,
                     'notes' => $request->notes,
+                    'include_referee' => $includeReferee,
+                    'referee_price' => $includeReferee ? $refereePrice : null,
                 ]);
             });
         } catch (\Illuminate\Database\QueryException $e) {
@@ -217,6 +232,7 @@ class BookingController extends Controller
             'payment_status' => 'required|in:full_payment,deposit',
             'amount' => 'required|numeric|min:0',
             'notes' => 'nullable|string',
+            'include_referee' => 'nullable|boolean',
         ]);
 
         $facility = Facility::with('slotTimeRule')->findOrFail($request->facility_id);
@@ -234,6 +250,15 @@ class BookingController extends Controller
             return back()->withInput()->with('error', 'This slot overlaps with an existing booking.');
         }
 
+        $includeReferee = (bool) $request->input('include_referee', false);
+        $refereePrice = null;
+        if ($includeReferee) {
+            $refereePrice = (float) \App\Models\Setting::get('referee_price', 0);
+            if ($booking->booking_type === 'match') {
+                $refereePrice = $refereePrice / 2;
+            }
+        }
+
         $booking->update([
             'facility_id' => $request->facility_id,
             'booking_date' => $request->booking_date,
@@ -247,6 +272,8 @@ class BookingController extends Controller
             'payment_status' => $request->payment_status,
             'amount' => $request->amount,
             'notes' => $request->notes,
+            'include_referee' => $includeReferee,
+            'referee_price' => $refereePrice,
         ]);
 
         ActivityLog::log('update', 'Booking', $booking->id, $booking->customer_name);

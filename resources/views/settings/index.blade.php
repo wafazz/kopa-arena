@@ -123,6 +123,20 @@
                             <small class="text-muted">e.g. 50 = customer pays 50% as deposit, remaining at venue</small>
                         </div>
                     </div>
+                    <hr>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Referee Price (RM)</label>
+                            <p class="text-muted" style="font-size:0.85rem;">Set the price for optional referee add-on. Match bookings split this equally.</p>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text">RM</span>
+                                <input type="number" name="referee_price" class="form-control" value="{{ Setting::get('referee_price', 0) }}" min="0" step="0.01" placeholder="0.00">
+                            </div>
+                            <small class="text-muted">e.g. 50.00 = RM 50 for normal booking, RM 25 per team for match booking</small>
+                        </div>
+                    </div>
                     <div class="mt-3">
                         <button type="submit" class="au-btn au-btn-icon au-btn--green">
                             <i class="zmdi zmdi-check"></i>save gateway setting</button>
@@ -140,7 +154,8 @@
                     <li class="mb-2"><i class="zmdi zmdi-check text-success me-2"></i>Set to <strong>None</strong> for cash-only mode</li>
                     <li class="mb-2"><i class="zmdi zmdi-check text-success me-2"></i>Deposit % applies to online bookings</li>
                     <li class="mb-2"><i class="zmdi zmdi-alert-circle text-warning me-2"></i>Configure credentials below before activating</li>
-                    <li><i class="zmdi zmdi-alert-circle text-warning me-2"></i>Both gateways share the same return/callback URLs</li>
+                    <li class="mb-2"><i class="zmdi zmdi-alert-circle text-warning me-2"></i>Both gateways share the same return/callback URLs</li>
+                    <li><i class="zmdi zmdi-check text-success me-2"></i>Referee price: full for normal, split for match</li>
                 </ul>
             </div>
         </div>
