@@ -132,6 +132,7 @@
     .stat-item { text-align: center; padding: 30px 15px; }
     .stat-number { font-size: 3rem; font-weight: 800; background: linear-gradient(135deg, var(--ka-primary), #2dd881); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .stat-label { color: rgba(255,255,255,0.7); font-weight: 500; font-size: 0.95rem; margin-top: 5px; }
+    @keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
 
     /* FOOTER */
     .footer-section { background: var(--ka-dark); color: rgba(255,255,255,0.7); padding: 60px 0 0; }

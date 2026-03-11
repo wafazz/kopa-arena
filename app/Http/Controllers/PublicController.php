@@ -9,6 +9,7 @@ use App\Models\Facility;
 use App\Models\PricingRule;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -29,12 +30,47 @@ class PublicController extends Controller
             'bookings' => Booking::where('status', 'approved')->count(),
         ];
 
+        $this->trackVisitor();
+
         $activeGateway = $this->getActiveGateway();
         $onlinePaymentEnabled = $activeGateway['gateway'] !== 'none';
         $depositPercentage = (int) Setting::get('deposit_percentage', 50);
         $refereePrice = (float) Setting::get('referee_price', 0);
 
         return view('landing', compact('branches', 'facilities', 'pricingRules', 'stats', 'onlinePaymentEnabled', 'depositPercentage', 'refereePrice'));
+    }
+
+    public function visitorStats()
+    {
+        $stats = Cache::remember('visitor_stats', 60, function () {
+            return [
+                'total' => (int) Setting::get('total_visitors', 0),
+                'unique' => (int) Setting::get('unique_visitors', 0),
+            ];
+        });
+
+        return response()->json($stats);
+    }
+
+    private function trackVisitor()
+    {
+        $ip = request()->ip();
+
+        // Increment total visitors (every page load)
+        Setting::set('total_visitors', (int) Setting::get('total_visitors', 0) + 1);
+
+        // Track unique visitors via cache (IP set, never expires)
+        $uniqueKey = 'visitor_ips';
+        $ips = Cache::get($uniqueKey, []);
+
+        if (!in_array($ip, $ips)) {
+            $ips[] = $ip;
+            Cache::forever($uniqueKey, $ips);
+            Setting::set('unique_visitors', count($ips));
+        }
+
+        // Bust the stats cache so next read picks up new values
+        Cache::forget('visitor_stats');
     }
 
     public function bookedSlots(Request $request)

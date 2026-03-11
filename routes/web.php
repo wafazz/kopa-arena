@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 // Public routes (no auth)
 Route::get('/', [PublicController::class, 'index'])->name('landing');
 Route::get('/booked-slots', [PublicController::class, 'bookedSlots'])->name('public.booked-slots');
+Route::get('/visitor-stats', [PublicController::class, 'visitorStats'])->name('public.visitor-stats');
 Route::post('/book', [PublicController::class, 'store'])->name('public.book');
 Route::get('/payment/return', [PublicController::class, 'paymentReturn'])->name('public.payment.return');
 Route::post('/payment/callback', [PublicController::class, 'paymentCallback'])->name('public.payment.callback');

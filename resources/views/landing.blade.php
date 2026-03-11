@@ -418,8 +418,8 @@
             </div>
             <div class="col-6 col-lg-3 fade-up">
                 <div class="stat-item">
-                    <div class="stat-number">5+</div>
-                    <div class="stat-label">Years Experience</div>
+                    <div class="stat-number" id="live-visitors">0</div>
+                    <div class="stat-label"><span style="display:inline-block;width:8px;height:8px;background:#0f0;border-radius:50%;margin-right:4px;animation:pulse-dot 1.5s infinite;"></span>Total Visitors</div>
                 </div>
             </div>
         </div>
@@ -821,5 +821,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 @endif
+
+// Live visitor counter
+(function() {
+    function fetchVisitors() {
+        fetch('{{ route("public.visitor-stats") }}')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var el = document.getElementById('live-visitors');
+                if (el) {
+                    var target = data.total || 0;
+                    var current = parseInt(el.textContent) || 0;
+                    if (current !== target) animateCount(el, current, target);
+                }
+            })
+            .catch(function() {});
+    }
+    function animateCount(el, from, to) {
+        var duration = 800;
+        var start = performance.now();
+        function step(now) {
+            var progress = Math.min((now - start) / duration, 1);
+            el.textContent = Math.floor(from + (to - from) * progress);
+            if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+    fetchVisitors();
+    setInterval(fetchVisitors, 30000);
+})();
 </script>
 @endpush
