@@ -51,6 +51,20 @@
                     </div>
 
                     <hr>
+                    <h3 class="title-2 m-b-25">Operating Hours</h3>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Open From <span class="text-danger">*</span></label>
+                            <input type="time" name="earliest_start" class="form-control" value="{{ old('earliest_start', '08:00') }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Open Until <span class="text-danger">*</span></label>
+                            <input type="time" name="latest_start" class="form-control" value="{{ old('latest_start', '22:00') }}" required>
+                            <small class="text-muted">Last available slot start time.</small>
+                        </div>
+                    </div>
+
+                    <hr>
                     <h3 class="title-2 m-b-25">Pricing</h3>
                     <div class="row">
                         <div class="col-md-4 mb-3">

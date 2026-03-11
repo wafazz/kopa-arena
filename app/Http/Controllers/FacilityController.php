@@ -31,6 +31,8 @@ class FacilityController extends Controller
             'type' => 'required|in:football_field',
             'status' => 'required|in:active,maintenance,closed',
             'normal_price' => 'required|numeric|min:0',
+            'earliest_start' => 'required|date_format:H:i',
+            'latest_start' => 'required|date_format:H:i',
         ]);
 
         $facility = Facility::create($request->only('branch_id', 'name', 'type', 'status'));
@@ -39,8 +41,8 @@ class FacilityController extends Controller
             'facility_id' => $facility->id,
             'slot_duration' => 90,
             'slot_interval' => 30,
-            'earliest_start' => '08:00',
-            'latest_start' => '22:00',
+            'earliest_start' => $request->earliest_start,
+            'latest_start' => $request->latest_start,
         ]);
 
         Pricing::create([
@@ -73,9 +75,27 @@ class FacilityController extends Controller
             'type' => 'required|in:football_field',
             'status' => 'required|in:active,maintenance,closed',
             'normal_price' => 'required|numeric|min:0',
+            'earliest_start' => 'required|date_format:H:i',
+            'latest_start' => 'required|date_format:H:i',
         ]);
 
         $facility->update($request->only('branch_id', 'name', 'type', 'status'));
+
+        $rule = $facility->slotTimeRule;
+        if ($rule) {
+            $rule->update([
+                'earliest_start' => $request->earliest_start,
+                'latest_start' => $request->latest_start,
+            ]);
+        } else {
+            SlotTimeRule::create([
+                'facility_id' => $facility->id,
+                'slot_duration' => 90,
+                'slot_interval' => 30,
+                'earliest_start' => $request->earliest_start,
+                'latest_start' => $request->latest_start,
+            ]);
+        }
 
         $pricing = $facility->pricings()->first();
         if ($pricing) {

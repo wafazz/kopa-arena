@@ -50,6 +50,21 @@
                     </div>
 
                     <hr>
+                    <h3 class="title-2 m-b-25">Operating Hours</h3>
+                    @php $rule = $facility->slotTimeRule; @endphp
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Open From <span class="text-danger">*</span></label>
+                            <input type="time" name="earliest_start" class="form-control" value="{{ old('earliest_start', substr($rule->earliest_start ?? '08:00', 0, 5)) }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Open Until <span class="text-danger">*</span></label>
+                            <input type="time" name="latest_start" class="form-control" value="{{ old('latest_start', substr($rule->latest_start ?? '22:00', 0, 5)) }}" required>
+                            <small class="text-muted">Last available slot start time.</small>
+                        </div>
+                    </div>
+
+                    <hr>
                     <h3 class="title-2 m-b-25">Pricing</h3>
                     @php $pricing = $facility->pricings->first(); @endphp
                     <div class="row">
