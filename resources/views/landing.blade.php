@@ -306,6 +306,10 @@
                         <div>
                             <div class="info-label">Estimated Price</div>
                             <div class="info-value" id="info_price">-</div>
+                            <div id="info_price_breakdown" style="display:none; font-size:0.8rem; margin-top:4px; line-height:1.6;">
+                                <div class="text-muted">Field Price: <span id="info_field_price">-</span></div>
+                                <div class="text-muted">Referee: <span id="info_referee_price">-</span></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -636,13 +640,15 @@ function updatePrice() {
     var bookingType = document.getElementById('booking_type').value;
     var infoPrice = document.getElementById('info_price');
 
+    var breakdown = document.getElementById('info_price_breakdown');
     if (!opt || !opt.value || !startTime || !bookingDate) {
         infoPrice.textContent = '-';
+        if (breakdown) breakdown.style.display = 'none';
         return;
     }
 
     var facility = facilityData[opt.value];
-    if (!facility) { infoPrice.textContent = '-'; return; }
+    if (!facility) { infoPrice.textContent = '-'; if (breakdown) breakdown.style.display = 'none'; return; }
 
     var facilityId = facility.id;
     var dayOfWeek = new Date(bookingDate).getDay();
@@ -681,7 +687,18 @@ function updatePrice() {
     var refPrice = refereeBasePrice;
     if (bookingType === 'match') refPrice = refPrice / 2;
     if (refLabel) refLabel.textContent = '(+ RM ' + refPrice.toFixed(2) + ')';
-    if (refCheck && refCheck.checked) price += refPrice;
+
+    if (refCheck && refCheck.checked) {
+        var fieldPrice = price;
+        price += refPrice;
+        if (breakdown) {
+            document.getElementById('info_field_price').textContent = 'RM ' + fieldPrice.toFixed(2);
+            document.getElementById('info_referee_price').textContent = 'RM ' + refPrice.toFixed(2);
+            breakdown.style.display = 'block';
+        }
+    } else {
+        if (breakdown) breakdown.style.display = 'none';
+    }
 
     infoPrice.textContent = 'RM ' + price.toFixed(2);
 
@@ -737,6 +754,18 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
     var priceText = document.getElementById('info_price').textContent;
     var nameText = form.querySelector('[name="customer_name"]').value;
 
+    var refCheck = document.getElementById('include_referee');
+    var priceBreakdownHtml = '';
+    if (refCheck && refCheck.checked) {
+        var fieldPriceText = document.getElementById('info_field_price').textContent;
+        var refPriceText = document.getElementById('info_referee_price').textContent;
+        priceBreakdownHtml = '<p style="margin:0;font-size:0.9rem;"><strong>Field Price:</strong> ' + fieldPriceText + '</p>' +
+            '<p style="margin:0;font-size:0.9rem;"><strong>Referee:</strong> ' + refPriceText + '</p>' +
+            '<p><strong>Total:</strong> ' + priceText + '</p>';
+    } else {
+        priceBreakdownHtml = '<p><strong>Total Price:</strong> ' + priceText + '</p>';
+    }
+
     var paymentEl = form.querySelector('[name="payment_method"]');
     var paymentMethod = paymentEl ? paymentEl.value : 'cash';
     var paymentOptionEl = form.querySelector('[name="payment_option"]:checked');
@@ -763,7 +792,7 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
             '<p><strong>Facility:</strong> ' + facilityText + '</p>' +
             '<p><strong>Date:</strong> ' + dateText + '</p>' +
             '<p><strong>Time:</strong> ' + timeText + '</p>' +
-            '<p><strong>Total Price:</strong> ' + priceText + '</p>' +
+            priceBreakdownHtml +
             chargeText +
             '<p><strong>Payment:</strong> ' + paymentLabel + '</p>' +
             '</div>',
