@@ -55,21 +55,17 @@ class PublicController extends Controller
     private function trackVisitor()
     {
         $ip = request()->ip();
+        $ipKey = 'visitor_' . md5($ip);
 
         // Increment total visitors (every page load)
         Setting::set('total_visitors', (int) Setting::get('total_visitors', 0) + 1);
 
-        // Track unique visitors via cache (IP set, never expires)
-        $uniqueKey = 'visitor_ips';
-        $ips = Cache::get($uniqueKey, []);
-
-        if (!in_array($ip, $ips)) {
-            $ips[] = $ip;
-            Cache::forever($uniqueKey, $ips);
-            Setting::set('unique_visitors', count($ips));
+        // Unique visitor = IP locked for 1 hour
+        if (!Cache::has($ipKey)) {
+            Cache::put($ipKey, true, 3600);
+            Setting::set('unique_visitors', (int) Setting::get('unique_visitors', 0) + 1);
         }
 
-        // Bust the stats cache so next read picks up new values
         Cache::forget('visitor_stats');
     }
 
