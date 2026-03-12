@@ -37,6 +37,10 @@ class FacilityController extends Controller
             'peak_price' => 'nullable|numeric|min:0',
             'peak_start' => 'nullable|date_format:H:i',
             'peak_end' => 'nullable|date_format:H:i',
+            'slot_duration' => 'required|integer|min:15',
+            'slot_interval' => 'required|integer|min:5',
+            'earliest_start' => 'required|date_format:H:i',
+            'latest_start' => 'required|date_format:H:i',
         ]);
 
         $facility = Facility::create([
@@ -48,10 +52,10 @@ class FacilityController extends Controller
 
         SlotTimeRule::create([
             'facility_id' => $facility->id,
-            'slot_duration' => 90,
-            'slot_interval' => 30,
-            'earliest_start' => '08:00',
-            'latest_start' => '22:00',
+            'slot_duration' => $request->slot_duration,
+            'slot_interval' => $request->slot_interval,
+            'earliest_start' => $request->earliest_start,
+            'latest_start' => $request->latest_start,
         ]);
 
         Pricing::create([

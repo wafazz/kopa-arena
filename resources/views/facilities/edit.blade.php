@@ -50,14 +50,24 @@
                     </div>
 
                     <hr>
-                    <h3 class="title-2 m-b-25">Operating Hours</h3>
+                    <h3 class="title-2 m-b-25">Slot & Operating Hours</h3>
                     @php $rule = $facility->slotTimeRule; @endphp
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Slot Duration (min) <span class="text-danger">*</span></label>
+                            <input type="number" name="slot_duration" class="form-control" value="{{ old('slot_duration', $rule->slot_duration ?? 90) }}" min="15" required>
+                            <small class="text-muted">Game length per booking.</small>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Slot Interval (min) <span class="text-danger">*</span></label>
+                            <input type="number" name="slot_interval" class="form-control" value="{{ old('slot_interval', $rule->slot_interval ?? 30) }}" min="5" required>
+                            <small class="text-muted">Time between each slot option.</small>
+                        </div>
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Open From <span class="text-danger">*</span></label>
                             <input type="time" name="earliest_start" class="form-control" value="{{ old('earliest_start', substr($rule->earliest_start ?? '08:00', 0, 5)) }}" required>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Open Until <span class="text-danger">*</span></label>
                             <input type="time" name="latest_start" class="form-control" value="{{ old('latest_start', substr($rule->latest_start ?? '22:00', 0, 5)) }}" required>
                             <small class="text-muted">Last available slot start time.</small>
