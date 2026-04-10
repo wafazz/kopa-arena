@@ -216,9 +216,14 @@ function buildTimeSlots() {
     var latest = rule.latest_start.substring(0, 5);
     var interval = rule.slot_interval;
     var duration = rule.slot_duration;
+    var overrides = rule.interval_overrides || [];
 
     document.getElementById('info_duration').textContent = duration + ' minutes';
-    document.getElementById('info_interval').textContent = 'Every ' + interval + ' minutes';
+    var intervalInfo = 'Default: ' + interval + ' min';
+    for (var oi = 0; oi < overrides.length; oi++) {
+        intervalInfo += ' | ' + overrides[oi].start + '-' + overrides[oi].end + ': ' + overrides[oi].interval + ' min';
+    }
+    document.getElementById('info_interval').textContent = intervalInfo;
     document.getElementById('info_hours').textContent = formatTime12(earliest) + ' - ' + formatTime12(latest);
 
     var [eh, em] = earliest.split(':').map(Number);
@@ -228,8 +233,17 @@ function buildTimeSlots() {
     var crossesMidnight = endMin < startMin;
     if (crossesMidnight) endMin += 1440;
 
+    function getIntervalAt(minutes) {
+        var actual = minutes % 1440;
+        var t = String(Math.floor(actual / 60)).padStart(2, '0') + ':' + String(actual % 60).padStart(2, '0');
+        for (var i = 0; i < overrides.length; i++) {
+            if (t >= overrides[i].start && t < overrides[i].end) return overrides[i].interval;
+        }
+        return interval;
+    }
+
     var slots = [];
-    for (var m = startMin; m <= endMin; m += interval) {
+    for (var m = startMin; m <= endMin; m += getIntervalAt(m)) {
         var actual = m % 1440;
         var h = String(Math.floor(actual / 60)).padStart(2, '0');
         var min = String(actual % 60).padStart(2, '0');

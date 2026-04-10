@@ -59,9 +59,9 @@
                             <small class="text-muted">Game length per booking.</small>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">Slot Interval (min) <span class="text-danger">*</span></label>
+                            <label class="form-label">Default Slot Interval (min) <span class="text-danger">*</span></label>
                             <input type="number" name="slot_interval" class="form-control" value="{{ old('slot_interval', 30) }}" min="5" required>
-                            <small class="text-muted">Time between each slot option.</small>
+                            <small class="text-muted">Default time between each slot.</small>
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Open From <span class="text-danger">*</span></label>
@@ -72,6 +72,23 @@
                             <input type="time" name="latest_start" class="form-control" value="{{ old('latest_start', '22:00') }}" required>
                             <small class="text-muted">Last available slot start time.</small>
                         </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Interval Overrides <small class="text-muted">(optional — override default interval for specific time ranges)</small></label>
+                        <div id="interval-overrides-container">
+                            @if(old('override_start'))
+                                @foreach(old('override_start') as $i => $v)
+                                <div class="row mb-2 interval-override-row">
+                                    <div class="col-md-3"><input type="time" name="override_start[]" class="form-control" value="{{ old('override_start.'.$i) }}" required></div>
+                                    <div class="col-md-3"><input type="time" name="override_end[]" class="form-control" value="{{ old('override_end.'.$i) }}" required></div>
+                                    <div class="col-md-3"><input type="number" name="override_interval[]" class="form-control" value="{{ old('override_interval.'.$i) }}" min="5" placeholder="Interval (min)" required></div>
+                                    <div class="col-md-3"><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('.interval-override-row').remove()"><i class="zmdi zmdi-close"></i> Remove</button></div>
+                                </div>
+                                @endforeach
+                            @endif
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="addOverrideRow()"><i class="zmdi zmdi-plus"></i> Add Override</button>
                     </div>
 
                     <hr>
@@ -91,3 +108,17 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function addOverrideRow() {
+    var row = document.createElement('div');
+    row.className = 'row mb-2 interval-override-row';
+    row.innerHTML = '<div class="col-md-3"><input type="time" name="override_start[]" class="form-control" required></div>'
+        + '<div class="col-md-3"><input type="time" name="override_end[]" class="form-control" required></div>'
+        + '<div class="col-md-3"><input type="number" name="override_interval[]" class="form-control" min="5" placeholder="Interval (min)" required></div>'
+        + '<div class="col-md-3"><button type="button" class="btn btn-sm btn-danger" onclick="this.closest(\'.interval-override-row\').remove()"><i class="zmdi zmdi-close"></i> Remove</button></div>';
+    document.getElementById('interval-overrides-container').appendChild(row);
+}
+</script>
+@endpush

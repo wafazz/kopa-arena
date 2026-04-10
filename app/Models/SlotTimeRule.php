@@ -9,7 +9,11 @@ class SlotTimeRule extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['facility_id', 'slot_duration', 'slot_interval', 'earliest_start', 'latest_start'];
+    protected $fillable = ['facility_id', 'slot_duration', 'slot_interval', 'interval_overrides', 'earliest_start', 'latest_start'];
+
+    protected $casts = [
+        'interval_overrides' => 'array',
+    ];
 
     public function facility()
     {

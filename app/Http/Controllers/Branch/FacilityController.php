@@ -41,7 +41,12 @@ class FacilityController extends Controller
             'slot_interval' => 'required|integer|min:5',
             'earliest_start' => 'required|date_format:H:i',
             'latest_start' => 'required|date_format:H:i',
+            'override_start.*' => 'nullable|date_format:H:i',
+            'override_end.*' => 'nullable|date_format:H:i',
+            'override_interval.*' => 'nullable|integer|min:5',
         ]);
+
+        $overrides = $this->buildIntervalOverrides($request);
 
         $facility = Facility::create([
             'branch_id' => $this->branchId(),
@@ -54,6 +59,7 @@ class FacilityController extends Controller
             'facility_id' => $facility->id,
             'slot_duration' => $request->slot_duration,
             'slot_interval' => $request->slot_interval,
+            'interval_overrides' => $overrides ?: null,
             'earliest_start' => $request->earliest_start,
             'latest_start' => $request->latest_start,
         ]);
@@ -97,13 +103,21 @@ class FacilityController extends Controller
             'slot_interval' => 'required|integer|min:15',
             'earliest_start' => 'required|date_format:H:i',
             'latest_start' => 'required|date_format:H:i',
+            'override_start.*' => 'nullable|date_format:H:i',
+            'override_end.*' => 'nullable|date_format:H:i',
+            'override_interval.*' => 'nullable|integer|min:5',
         ]);
+
+        $overrides = $this->buildIntervalOverrides($request);
 
         $facility->update($request->only('name', 'type', 'status'));
 
         $facility->slotTimeRule()->updateOrCreate(
             ['facility_id' => $facility->id],
-            $request->only('slot_duration', 'slot_interval', 'earliest_start', 'latest_start')
+            array_merge(
+                $request->only('slot_duration', 'slot_interval', 'earliest_start', 'latest_start'),
+                ['interval_overrides' => $overrides ?: null]
+            )
         );
 
         $pricing = $facility->pricings()->first();
@@ -137,5 +151,25 @@ class FacilityController extends Controller
         ActivityLog::log('destroy', 'Facility', $facility->id, $facility->name);
         $facility->delete();
         return redirect()->route('branch.facilities.index')->with('success', 'Facility deleted successfully.');
+    }
+
+    private function buildIntervalOverrides(Request $request)
+    {
+        $overrides = [];
+        $starts = $request->input('override_start', []);
+        $ends = $request->input('override_end', []);
+        $intervals = $request->input('override_interval', []);
+
+        foreach ($starts as $i => $start) {
+            if ($start && ($ends[$i] ?? null) && ($intervals[$i] ?? null)) {
+                $overrides[] = [
+                    'start' => $start,
+                    'end' => $ends[$i],
+                    'interval' => (int) $intervals[$i],
+                ];
+            }
+        }
+
+        return $overrides;
     }
 }
